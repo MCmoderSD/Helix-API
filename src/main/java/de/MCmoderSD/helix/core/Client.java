@@ -5,9 +5,7 @@ import com.github.philippheuer.credentialmanager.CredentialManagerBuilder;
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
 import com.github.twitch4j.TwitchClientBuilder;
 import com.github.twitch4j.helix.TwitchHelix;
-import de.MCmoderSD.helix.enums.Scope;
-
-import java.util.Set;
+import de.MCmoderSD.helix.handler.RoleHandler;
 
 public class Client {
 
@@ -22,6 +20,9 @@ public class Client {
     private final TwitchHelix helix;
     private final CredentialManager credentialManager;
     private final TokenManager manager;
+
+    // Handlers
+    private final RoleHandler roleHandler;
 
     // Constructor
     public Client(String clientId, String clientSecret) {
@@ -46,12 +47,10 @@ public class Client {
         helix = twitchClient.getHelix();
 
         // Initialize TokenManager
-        manager = new TokenManager(this, clientId, clientSecret);
-    }
+        manager = new TokenManager(this);
 
-    // Methods
-    public void authenticate() {
-        System.out.println(manager.getAuthorizationUrl(Scope.values()));
+        // Initialize Handler
+        roleHandler = new RoleHandler(this);
     }
 
     // Setters
@@ -60,7 +59,23 @@ public class Client {
     }
 
     // Getters
+    public String getClientId() {
+        return clientId;
+    }
+
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
     public TwitchHelix getHelix() {
         return helix;
+    }
+
+    public TokenManager getTokenManager() {
+        return manager;
+    }
+
+    public RoleHandler getRoleHandler() {
+        return roleHandler;
     }
 }

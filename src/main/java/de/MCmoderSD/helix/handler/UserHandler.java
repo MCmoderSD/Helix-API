@@ -3,14 +3,14 @@ package de.MCmoderSD.helix.handler;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 import de.MCmoderSD.helix.core.Client;
-import de.MCmoderSD.helix.core.TokenManager;
 import java.util.Collections;
 
+@SuppressWarnings("unused")
 public class UserHandler extends Handler {
 
     // Constructor
-    public UserHandler(Client client, TokenManager tokenManager) {
-        super(client, tokenManager);
+    public UserHandler(Client client) {
+        super(client);
     }
 
     // Get user with ID

@@ -18,8 +18,5 @@ public class Main {
 
         // Initialize API Client
         Client client = new Client(clientId, clientSecret);
-
-        // Authenticate
-        client.authenticate();
     }
 }

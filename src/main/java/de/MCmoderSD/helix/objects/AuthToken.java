@@ -41,21 +41,20 @@ public class AuthToken implements Serializable {
         id = Integer.parseInt(manager.getClient().getHelix().getUsers(accessToken, null, null).execute().getUsers().getFirst().getId());
 
         // Set next refresh
-        new Thread(() -> refresh(manager)).start();
-    }
+        new Thread(() -> {
 
-    private void refresh(TokenManager manager) {
+            // Sleep until the token expires
+            try {
+                var sleepTime = expiresIn * 1000L - (System.currentTimeMillis() - timestamp.getTime());
+                if (sleepTime > 1000) Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
-        // Sleep until the token expires
-        try {
-            var sleepTime = expiresIn * 1000L - (System.currentTimeMillis() - timestamp.getTime());
-            if (sleepTime > 1000) Thread.sleep(sleepTime);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+            // Refresh the token
+            manager.refreshToken(this);
 
-        // Refresh the token
-        manager.refreshToken(this);
+        }).start();
     }
 
     // Getters

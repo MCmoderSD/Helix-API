@@ -4,19 +4,23 @@ import de.MCmoderSD.encryption.Encryption;
 import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.sql.Driver;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 @SuppressWarnings("unused")
 public class SQL extends Driver {
 
     // Attributes
     private final Encryption encryption;
-    private final ObjectOutputStream objectOutputStream;
-    private final ByteArrayOutputStream byteArrayOutputStream;
 
     // Constructor
     public SQL(DatabaseType databaseType, String database, Encryption encryption) {
@@ -28,8 +32,6 @@ public class SQL extends Driver {
 
             // Set attributes
             this.encryption = encryption;
-            this.byteArrayOutputStream = new ByteArrayOutputStream();
-            this.objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
 
             // Initialize tables
             connection.prepareStatement("CREATE TABLE IF NOT EXISTS " +
@@ -41,45 +43,51 @@ public class SQL extends Driver {
                 """
             ).execute();
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private AuthToken decrypt(ResultSet resultSet) throws SQLException, IOException {
-        try {
-            String decrypted = encryption.decrypt(new String(resultSet.getBytes("token")));
-            byte[] data = Base64.getDecoder().decode(decrypted);
-            try (ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(data))) {
-                return (AuthToken) objectInputStream.readObject();
-            }
-        } catch (ClassNotFoundException e) {
-            throw new IOException("Failed to deserialize AuthToken", e);
-        }
+    private AuthToken decrypt(ResultSet resultSet) throws SQLException, IOException, ClassNotFoundException {
+
+        // Decrypt the token data
+        byte[] encryptedData = (resultSet.getBytes("token"));
+        String encryptedBase64 = new String(encryptedData);
+        String decryptedData = encryption.decrypt(encryptedBase64);
+
+        // Base64-Decode
+        byte[] compressedData = Base64.getDecoder().decode(decryptedData);
+
+        // Decompress the data
+        GZIPInputStream gzipStream = new GZIPInputStream(new ByteArrayInputStream(compressedData));
+
+        // Deserialize the object
+        ObjectInputStream objectInputStream = new ObjectInputStream(gzipStream);
+        return (AuthToken) objectInputStream.readObject();
     }
 
-    private String encrypt(AuthToken token) {
-        try {
+    private String encrypt(AuthToken token) throws IOException {
 
-            // Serialize the AuthToken object
-            objectOutputStream.writeObject(token);
-            objectOutputStream.flush();
+        // Initialize the streams
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        GZIPOutputStream gzipStream = new GZIPOutputStream(byteArrayOutputStream);
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipStream);
 
-            // Convert the ByteArrayOutputStream to a byte array and encode it to Base64
-            byte[] bytes = byteArrayOutputStream.toByteArray();
-            String base64 = Base64.getEncoder().encodeToString(bytes);
+        // Serialize the object
+        objectOutputStream.writeObject(token);
+        objectOutputStream.flush();
 
-            // Clear the ByteArrayOutputStream
-            byteArrayOutputStream.reset();
+        // Compress the data
+        gzipStream.finish();
 
-            // Encrypt the Base64 string
-            return encryption.encrypt(base64);
+        // Encode the compressed data to Base64
+        byte[] compressedBytes = byteArrayOutputStream.toByteArray();
+        String base64 = Base64.getEncoder().encodeToString(compressedBytes);
 
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            return null;
-        }
+        // Encrypt the Base64 string
+        return encryption.encrypt(base64);
     }
+
 
     public AuthToken getAuthToken(Integer id) {
         try {
@@ -96,7 +104,7 @@ public class SQL extends Driver {
             // Process the result set
             if (resultSet.next()) return decrypt(resultSet);
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | IOException | ClassNotFoundException e) {
             System.err.println(e.getMessage());
         }
 
@@ -138,7 +146,7 @@ public class SQL extends Driver {
             // Return the auth tokens
             return authTokens;
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | IOException | ClassNotFoundException e) {
             System.err.println(e.getMessage());
             return null;
         }
@@ -171,7 +179,7 @@ public class SQL extends Driver {
             // Return the auth tokens
             return authTokens;
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException | IOException | ClassNotFoundException e) {
             System.err.println(e.getMessage());
             return null;
         }
@@ -195,7 +203,7 @@ public class SQL extends Driver {
             statement.setString(3, encrypted);      // update token
             statement.executeUpdate(); // execute
 
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             System.err.println(e.getMessage());
         }
     }

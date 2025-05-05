@@ -44,22 +44,22 @@ public class TokenManager {
     private final HashMap<Integer, AuthToken> authTokens;
 
     // Constructor
-    public TokenManager(Client client, String clientId, String clientSecret) {
+    public TokenManager(Client client) {
 
         // Set Client
         this.client = client;
 
         // Set Credentials
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
+        clientId = client.getClientId();
+        clientSecret = client.getClientSecret();
 
-        // Initialize SQL
+        // Initialize SQL ToDo: Implement a better way to handle the database
         sql = new SQL(Driver.DatabaseType.SQLITE, "database.db", new Encryption(clientSecret));
 
         // Initialize Auth Tokens
         authTokens = sql.getAuthTokens();
 
-        // Initialize Server
+        // Initialize Server ToDo: Implement a better way to handle the server
         try {
             Server server = new Server("localhost", 8000, null, JsonUtility.loadJson("/server.json", false), true);
             server.start();
@@ -86,29 +86,6 @@ public class TokenManager {
         } catch (IOException | InterruptedException e) {
             System.err.println("Failed to send request: " + e.getMessage());
             return null;
-        }
-    }
-
-    // Refresh token
-    public void refreshToken(AuthToken token) {
-        try {
-
-            // Create body
-            String body = String.format(
-                    "client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token",
-                    clientId,
-                    clientSecret,
-                    token.getRefreshToken()
-            );
-
-            // Request token
-            boolean success = parseToken(sendRequest(createRequest(body)), token.getId());
-
-            // Error message
-            if (!success) System.err.println("Failed to refresh token");
-
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to refresh token");
         }
     }
 
@@ -158,6 +135,29 @@ public class TokenManager {
         return true;
     }
 
+    // Refresh token
+    public void refreshToken(AuthToken token) {
+        try {
+
+            // Create body
+            String body = String.format(
+                    "client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token",
+                    clientId,
+                    clientSecret,
+                    token.getRefreshToken()
+            );
+
+            // Request token
+            boolean success = parseToken(sendRequest(createRequest(body)), token.getId());
+
+            // Error message
+            if (!success) System.err.println("Failed to refresh token");
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to refresh token");
+        }
+    }
+
     // Get authorization URL
     public String getAuthorizationUrl(Scope... scopes) {
         StringBuilder scopeBuilder = new StringBuilder();
@@ -166,9 +166,29 @@ public class TokenManager {
                 "%s?client_id=%s&redirect_uri=%s/callback&response_type=code&scope=%s",
                 AUTH_URL,
                 clientId,
-                "https://localhost:8000",
+                "https://localhost:8000",   // ToDo: Change to server.getHostname()
                 scopeBuilder.substring(0, scopeBuilder.length() - 1)
         );
+    }
+
+    // Get client
+    public Client getClient() {
+        return client;
+    }
+
+    // Get token
+    public AuthToken getAuthToken(Integer channelId) {
+        return authTokens.get(channelId);
+    }
+
+    // Get tokens
+    public HashMap<Integer, AuthToken> getAuthTokens() {
+        return authTokens;
+    }
+
+    // Get token
+    public String getToken(Integer channelId) {
+        return authTokens.get(channelId).getAccessToken();
     }
 
     // Get token
@@ -184,10 +204,6 @@ public class TokenManager {
 
         // Refresh token
         return authTokens.get(channelId).getAccessToken();
-    }
-
-    public Client getClient() {
-        return client;
     }
 
     // Callback handler
