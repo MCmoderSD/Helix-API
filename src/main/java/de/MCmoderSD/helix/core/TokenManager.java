@@ -1,0 +1,238 @@
+package de.MCmoderSD.helix.core;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import de.MCmoderSD.encryption.Encryption;
+import de.MCmoderSD.helix.database.SQL;
+import de.MCmoderSD.helix.enums.Scope;
+import de.MCmoderSD.helix.objects.AuthToken;
+import de.MCmoderSD.json.JsonUtility;
+import de.MCmoderSD.server.Server;
+import de.MCmoderSD.sql.Driver;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.HashMap;
+import java.util.Set;
+
+public class TokenManager {
+
+    // Constants
+    private static final String AUTH_URL = "https://id.twitch.tv/oauth2/authorize";
+    private static final String TOKEN_URL = "https://id.twitch.tv/oauth2/token";
+
+    // Associations
+    private final Client client;
+    private final SQL sql;
+
+    // Credentials
+    private final String clientId;
+    private final String clientSecret;
+
+    // Attributes
+    private final HashMap<Integer, AuthToken> authTokens;
+
+    // Constructor
+    public TokenManager(Client client, String clientId, String clientSecret) {
+
+        // Set Client
+        this.client = client;
+
+        // Set Credentials
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+
+        // Initialize SQL
+        sql = new SQL(Driver.DatabaseType.SQLITE, "database.db", new Encryption(clientSecret));
+
+        // Initialize Auth Tokens
+        authTokens = sql.getAuthTokens();
+
+        // Initialize Server
+        try {
+            Server server = new Server("localhost", 8000, null, JsonUtility.loadJson("/server.json", false), true);
+            server.start();
+            server.getHttpsServer().createContext("/callback", new CallbackHandler(this, server));
+        } catch (IOException | URISyntaxException | NoSuchAlgorithmException | KeyStoreException |
+                 InterruptedException | UnrecoverableKeyException | KeyManagementException | CertificateException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Create HTTP request
+    private static HttpRequest createRequest(String body) {
+        return HttpRequest.newBuilder()
+                .uri(URI.create(TOKEN_URL))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+    }
+
+    // Send HTTP request
+    private static HttpResponse<String> sendRequest(HttpRequest request) {
+        try {
+            return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Failed to send request: " + e.getMessage());
+            return null;
+        }
+    }
+
+    // Refresh token
+    public void refreshToken(AuthToken token) {
+        try {
+
+            // Create body
+            String body = String.format(
+                    "client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token",
+                    clientId,
+                    clientSecret,
+                    token.getRefreshToken()
+            );
+
+            // Request token
+            boolean success = parseToken(sendRequest(createRequest(body)), token.getId());
+
+            // Error message
+            if (!success) System.err.println("Failed to refresh token");
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to refresh token");
+        }
+    }
+
+    // Parse token
+    private boolean parseToken(HttpResponse<String> response, @Nullable Integer id) throws JsonProcessingException {
+
+        // Null check
+        if (response == null || response.body() == null || response.body().isEmpty() || response.body().isBlank()) {
+            System.err.println("Failed to get response");
+            return false;
+        }
+
+        // Check for invalid refresh token
+        if (response.body().contains("{\"status\":400,\"message\":\"Invalid refresh token\"}") && id != null) {
+            System.err.println("Invalid refresh token, please reauthorize the bot");
+            System.err.println("Deleting auth token");
+            authTokens.remove(id);
+            sql.deleteAuthToken(id);
+            return true;
+        }
+
+        // Check for error
+        if (response.statusCode() != 200) {
+            System.err.println("Failed to get token: " + response.body());
+            return false;
+        }
+
+        // Create new token
+        AuthToken token = new AuthToken(this, response.body());
+
+        // Null check
+        if (token.getAccessToken() == null) {
+            System.err.println("Failed to get access token");
+            return false;
+        }
+
+        // Add token
+        authTokens.replace(token.getId(), token);
+
+        // Add Credentials
+        client.addCredential(token.getAccessToken());
+
+        // Update tokens in the database
+        sql.addAuthToken(token);
+
+        // Return
+        return true;
+    }
+
+    // Get authorization URL
+    public String getAuthorizationUrl(Scope... scopes) {
+        StringBuilder scopeBuilder = new StringBuilder();
+        for (Scope scope : Set.of(scopes)) scopeBuilder.append(scope.getScope()).append("+");
+        return String.format(
+                "%s?client_id=%s&redirect_uri=%s/callback&response_type=code&scope=%s",
+                AUTH_URL,
+                clientId,
+                "https://localhost:8000",
+                scopeBuilder.substring(0, scopeBuilder.length() - 1)
+        );
+    }
+
+    // Get token
+    public String getToken(Integer channelId, Scope... scopes) {
+
+        // Check Parameters
+        if (channelId == null || channelId < 1) throw new IllegalArgumentException("Channel ID cannot be null or less than 1");
+        if (scopes == null || scopes.length == 0) throw new IllegalArgumentException("Scopes cannot be null or empty");
+
+        // Check if a token is available
+        if (!authTokens.containsKey(channelId)) throw new IllegalArgumentException("No token found for channel ID: " + channelId);
+        if (!authTokens.get(channelId).hasScope(scopes)) throw new IllegalArgumentException("Token does not have the required scopes");
+
+        // Refresh token
+        return authTokens.get(channelId).getAccessToken();
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    // Callback handler
+    private class CallbackHandler implements HttpHandler {
+
+        // Attributes
+        private final TokenManager manager;
+        private final Server server;
+
+        // Constructor
+        public CallbackHandler(TokenManager manager, Server server) {
+            this.manager = manager;
+            this.server = server;
+        }
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+
+            // Variables
+            String text;
+
+            // Extract code and scopes
+            String query = exchange.getRequestURI().getQuery();
+            System.out.println("Query: " + query);
+            if (query != null && query.contains("code=")) {
+                // Create body
+                String body = String.format(
+                        "client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=https://%s:%d/callback",
+                        clientId,
+                        clientSecret,
+                        query.split("code=")[1].split("&")[0],
+                        server.getHostname(),
+                        server.getPort()
+                );
+
+                // Parse token
+                boolean success = manager.parseToken(sendRequest(createRequest(body)), null);
+
+                text = success ? "Successfully authenticated! \nYou can close this tab now!" : "Failed to authenticate, please try again";
+            } else text = "Failed to authenticate, please try again";
+
+            // Send response
+            exchange.sendResponseHeaders(200, text.length());
+            exchange.getResponseBody().write(text.getBytes());
+            exchange.getResponseBody().close();
+        }
+    }
+}

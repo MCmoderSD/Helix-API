@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.MCmoderSD</groupId>
+    <artifactId>Helix-API</artifactId>
+    <version>0.0.1</version>
+
+    <name>Helix-API</name>
+    <description>A Java Helix-API wrapper for communicating with the Twitch Helix API</description>
+
+    <distributionManagement>
+        <repository>
+            <id>Nexus</id>
+            <name>Sonatype Nexus</name>
+            <url>https://mcmodersd.de/nexus/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>Nexus</id>
+            <name>Sonatype Nexus</name>
+            <url>https://mcmodersd.de/nexus/repository/maven-releases/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+
+        <!-- Json -->
+        <dependency>
+            <groupId>de.MCmoderSD</groupId>
+            <artifactId>Encryption</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
+        <!-- Json -->
+        <dependency>
+            <groupId>de.MCmoderSD</groupId>
+            <artifactId>JsonUtility</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
+        <!-- Json -->
+        <dependency>
+            <groupId>de.MCmoderSD</groupId>
+            <artifactId>JSQL-Driver</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
+        <!-- Server -->
+        <dependency>
+            <groupId>de.MCmoderSD</groupId>
+            <artifactId>HTTPS-Server</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+        <!-- Twitch4J -->
+        <dependency>
+            <groupId>com.github.twitch4j</groupId>
+            <artifactId>twitch4j</artifactId>
+            <version>1.24.0</version>
+        </dependency>
+
+        <!-- Logback -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.5.18</version>
+        </dependency>
+
+        <!-- Annotations -->
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>26.0.2</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version> <!-- don't change this -->
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
