@@ -13,6 +13,11 @@ import java.util.HashSet;
 @SuppressWarnings("unused")
 public class UserHandler extends Handler {
 
+    // Constants
+    public static final Scope[] REQUIRED_SCOPES = {
+            Scope.USER_READ_EMAIL   // User email
+    };
+
     // Constructor
     public UserHandler(Client client) {
         super(client);

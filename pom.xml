@@ -6,7 +6,7 @@
 
     <groupId>de.MCmoderSD</groupId>
     <artifactId>Helix-API</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.4</version>
 
     <name>Helix-API</name>
     <description>A Java Helix-API wrapper for communicating with the Twitch Helix API</description>
@@ -34,13 +34,6 @@
     </repositories>
 
     <dependencies>
-
-        <!-- ImageLoader -->
-        <dependency>
-            <groupId>de.MCmoderSD</groupId>
-            <artifactId>ImageLoader</artifactId>
-            <version>1.2.0</version>
-        </dependency>
 
         <!-- Json -->
         <dependency>

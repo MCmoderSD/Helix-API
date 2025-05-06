@@ -1,12 +1,9 @@
 package de.MCmoderSD.helix.objects;
 
 import com.github.twitch4j.helix.domain.User;
-import de.MCmoderSD.imageloader.ImageLoader;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.io.Serializable;
-import java.net.URISyntaxException;
+
 import java.time.Instant;
 
 @SuppressWarnings("unused")
@@ -23,23 +20,12 @@ public class TwitchUser implements Serializable {
     protected final String profileImageUrl;
     protected final String offlineImageUrl;
 
-    // Images
-    protected final BufferedImage profileImage;
-    protected final BufferedImage offlineImage;
-
     // Enums
     protected final BroadcasterType broadcasterType;
     protected final Type type;
 
     // Constructor
     public TwitchUser(User user) {
-
-        // Init Image Loader
-        ImageLoader imageLoader = new ImageLoader();
-
-        // Temp Variables
-        BufferedImage profileImage = null;
-        BufferedImage offlineImage = null;
 
         // Attributes
         id = Integer.parseInt(user.getId());            // User ID
@@ -51,20 +37,6 @@ public class TwitchUser implements Serializable {
         description = user.getDescription();            // Description
         profileImageUrl = user.getProfileImageUrl();    // Profile image URL
         offlineImageUrl = user.getOfflineImageUrl();    // Offline image URL
-
-        try {
-
-            // Try to load images
-            profileImage = imageLoader.load(profileImageUrl); // Profile image
-            offlineImage = imageLoader.load(offlineImageUrl); // Offline image
-
-        } catch (IOException | URISyntaxException e) {
-            System.err.println("Failed to load images: " + e.getMessage());
-        }
-
-        // Set images
-        this.profileImage = profileImage; // Profile image
-        this.offlineImage = offlineImage; // Offline image
 
         // Set enums
         broadcasterType = BroadcasterType.fromString(user.getBroadcasterType());    // Broadcaster type
@@ -79,8 +51,6 @@ public class TwitchUser implements Serializable {
         System.out.println("Created at: " + createdAt);
         System.out.println("Display name: " + displayName);
         System.out.println("Description: " + description);
-        System.out.println("Profile image URL: " + profileImageUrl + (profileImage != null ? " | Loaded" : " | Failed to load"));
-        System.out.println("Offline image URL: " + offlineImageUrl + (offlineImage != null ? " | Loaded" : " | Failed to load"));
         System.out.println("Broadcaster type: " + broadcasterType);
         System.out.println("User type: " + type);
         System.out.println("------------------------------");
@@ -113,14 +83,6 @@ public class TwitchUser implements Serializable {
 
     public String getOfflineImageUrl() {
         return offlineImageUrl;
-    }
-
-    public BufferedImage getProfileImage() {
-        return profileImage;
-    }
-
-    public BufferedImage getOfflineImage() {
-        return offlineImage;
     }
 
     public BroadcasterType getBroadcasterType() {

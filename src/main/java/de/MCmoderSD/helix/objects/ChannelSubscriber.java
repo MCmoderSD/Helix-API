@@ -2,6 +2,7 @@ package de.MCmoderSD.helix.objects;
 
 import com.github.twitch4j.helix.domain.Subscription;
 import com.github.twitch4j.helix.domain.User;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
@@ -34,8 +35,6 @@ public class ChannelSubscriber extends TwitchUser implements Serializable {
         planName = subscription.getPlanName();                          // Subscription plan name
         isGift = subscription.getIsGift();                              // Is this subscription a gift?
         this.gifter = gifter != null ? new TwitchUser(gifter) : null;   // Gifter (TwitchUser)
-
-        print();
     }
 
     // Methods
