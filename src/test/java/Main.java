@@ -1,4 +1,5 @@
 import com.fasterxml.jackson.databind.JsonNode;
+
 import de.MCmoderSD.helix.config.Configuration;
 import de.MCmoderSD.helix.core.Client;
 import de.MCmoderSD.helix.enums.Scope;
@@ -8,20 +9,30 @@ import de.MCmoderSD.helix.handler.UserHandler;
 import de.MCmoderSD.helix.objects.ChannelFollower;
 
 import de.MCmoderSD.json.JsonUtility;
+import de.MCmoderSD.server.Server;
 import de.MCmoderSD.sql.Driver;
 
 import java.io.IOException;
+
 import java.net.URISyntaxException;
+
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
 @SuppressWarnings("ALL")
 public class Main {
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) throws IOException, URISyntaxException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, InterruptedException, KeyManagementException {
 
         // Load Config
         JsonNode config = JsonUtility.loadJson("/config.json", false);
+        JsonNode jks = JsonUtility.loadJson("/server.json", false);
 
         // Configure Helix
         Configuration.setClientId(config.get("clientId").asText());
@@ -31,14 +42,15 @@ public class Main {
         Configuration.setDatabaseType(Driver.DatabaseType.SQLITE);
         Configuration.setDatabase("database.db");
 
-        // Configure Server
-        Configuration.setServerHost("localhost");
-        Configuration.setServerPort(8000);
+        // Initialize Server
+        Server server = new Server("localhost", 8080, null, jks, true);
+        server.start();
 
         // Initialize API Client
-        Client client = new Client();
-        System.out.println(client.getTokenManager().getAuthorizationUrl(Scope.values()));
+        Client client = new Client(server);
+        System.out.println("Auth URL: " + client.getTokenManager().getAuthorizationUrl(Scope.values()));
 
+        // Test API
         Scanner scanner = new Scanner(System.in);
         while (true) printChannelInfo(scanner.nextLine(), client.getUserHandler(), client.getChannelHandler());
     }

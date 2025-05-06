@@ -4,11 +4,11 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import de.MCmoderSD.encryption.Encryption;
-import de.MCmoderSD.helix.config.Configuration;
+
 import de.MCmoderSD.helix.database.SQL;
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.objects.AuthToken;
-import de.MCmoderSD.json.JsonUtility;
+
 import de.MCmoderSD.server.Server;
 
 import org.jetbrains.annotations.Nullable;
@@ -16,16 +16,9 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -39,8 +32,8 @@ public class TokenManager {
 
     // Associations
     private final Client client;
-    private final SQL sql;
     private final Server server;
+    private final SQL sql;
 
     // Credentials
     private final String clientId;
@@ -50,10 +43,11 @@ public class TokenManager {
     private final HashMap<Integer, AuthToken> authTokens;
 
     // Constructor
-    public TokenManager(Client client) {
+    public TokenManager(Client client, Server server) {
 
-        // Set Client
+        // Set Associations
         this.client = client;
+        this.server = server;
 
         // Set Credentials
         clientId = client.getClientId();
@@ -67,15 +61,8 @@ public class TokenManager {
         // Refresh Auth Tokens
         for (AuthToken token : authTokens.values()) refreshToken(token);
 
-        // Initialize Server ToDo: Implement a better way to handle the server
-        try {
-            server = new Server(Configuration.serverHost, Configuration.serverPort, null, JsonUtility.loadJson("/server.json", false), true);
-            server.start();
-            server.getHttpsServer().createContext("/callback", new CallbackHandler(this, server));
-        } catch (IOException | URISyntaxException | NoSuchAlgorithmException | KeyStoreException |
-                 InterruptedException | UnrecoverableKeyException | KeyManagementException | CertificateException e) {
-            throw new RuntimeException(e);
-        }
+        // Register Callback Handler
+        server.getHttpsServer().createContext("/callback", new CallbackHandler(this, server));
     }
 
     // Create HTTP request

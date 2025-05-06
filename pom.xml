@@ -6,7 +6,7 @@
 
     <groupId>de.MCmoderSD</groupId>
     <artifactId>Helix-API</artifactId>
-    <version>0.0.5</version>
+    <version>1.0.0</version>
 
     <name>Helix-API</name>
     <description>A Java Helix-API wrapper for communicating with the Twitch Helix API</description>
@@ -35,7 +35,7 @@
 
     <dependencies>
 
-        <!-- Json -->
+        <!-- Encryption -->
         <dependency>
             <groupId>de.MCmoderSD</groupId>
             <artifactId>Encryption</artifactId>
@@ -70,12 +70,12 @@
             <version>1.24.0</version>
         </dependency>
 
-        <!-- Logback -->
-        <!--<dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.5.18</version>
-        </dependency>-->
+        <!-- SLF4J API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>2.0.17</version>
+        </dependency>
 
         <!-- Annotations -->
         <dependency>
@@ -84,6 +84,7 @@
             <version>26.0.2</version>
             <scope>compile</scope>
         </dependency>
+
     </dependencies>
 
     <build>

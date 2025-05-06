@@ -17,10 +17,6 @@ public class Configuration {
     public static String username;
     public static String password;
 
-    // Server
-    public static String serverHost;
-    public static Integer serverPort;
-
     // Setters
     public static void setClientId(String clientId) {
         Configuration.clientId = clientId;
@@ -52,14 +48,6 @@ public class Configuration {
 
     public static void setPassword(String password) {
         Configuration.password = password;
-    }
-
-    public static void setServerHost(String serverHost) {
-        Configuration.serverHost = serverHost;
-    }
-
-    public static void setServerPort(Integer serverPort) {
-        Configuration.serverPort = serverPort;
     }
 
     public static boolean validate() {
@@ -104,16 +92,6 @@ public class Configuration {
 
         if ((password == null || password.isEmpty()) && !databaseType.equals(Driver.DatabaseType.SQLITE)) {
             System.out.println("Password is not set.");
-            valid = false;
-        }
-
-        if (serverHost == null || serverHost.isEmpty()) {
-            System.out.println("Server Host is not set.");
-            valid = false;
-        }
-
-        if (serverPort == null || serverPort < 1 || serverPort > 65535) {
-            System.out.println("Server Port is not set.");
             valid = false;
         }
 

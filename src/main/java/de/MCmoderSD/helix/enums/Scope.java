@@ -3,6 +3,7 @@ package de.MCmoderSD.helix.enums;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.Serializable;
+
 import java.util.HashSet;
 
 /**

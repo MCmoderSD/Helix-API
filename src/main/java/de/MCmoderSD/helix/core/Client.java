@@ -12,7 +12,9 @@ import de.MCmoderSD.helix.handler.ChannelHandler;
 import de.MCmoderSD.helix.handler.RoleHandler;
 import de.MCmoderSD.helix.handler.UserHandler;
 
-@SuppressWarnings("ALL")
+import de.MCmoderSD.server.Server;
+
+@SuppressWarnings("unused")
 public class Client {
 
     // Constants
@@ -33,7 +35,7 @@ public class Client {
     private final ChannelHandler channelHandler;
 
     // Constructor
-    public Client() {
+    public Client(Server server) {
 
         // Validate Configuration
         if (!Configuration.validate()) throw new IllegalStateException("Configuration is not valid. Please check your config.");
@@ -58,7 +60,7 @@ public class Client {
         helix = twitchClient.getHelix();
 
         // Initialize TokenManager
-        manager = new TokenManager(this);
+        manager = new TokenManager(this, server);
 
         // Initialize Handler
         userHandler = new UserHandler(this);
