@@ -1,6 +1,5 @@
 package de.MCmoderSD.helix.objects;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.MCmoderSD.helix.core.TokenManager;
@@ -10,6 +9,7 @@ import java.io.Serializable;
 import java.sql.Timestamp;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 import static de.MCmoderSD.helix.enums.Scope.format;
 
@@ -20,25 +20,30 @@ public class AuthToken implements Serializable {
     private final Integer id;
     private final String accessToken;
     private final String refreshToken;
-    private final Scope[] scopes;
-    private final int expiresIn;
+    private final HashSet<Scope> scopes;
+    private final Integer expiresIn;
     private final Timestamp timestamp;
 
-    // JSON Constructor
-    public AuthToken(TokenManager manager, String responseBody) throws JsonProcessingException {
+    // Constructor
+    public AuthToken(TokenManager manager, String responseBody) {
+        try {
 
-        // Parse JSON
-        JsonNode jsonNode = new ObjectMapper().readTree(responseBody);
+            // Parse JSON
+            JsonNode jsonNode = new ObjectMapper().readTree(responseBody);
 
-        // Extract data
-        accessToken = jsonNode.get("access_token").asText();
-        refreshToken = jsonNode.get("refresh_token").asText();
-        scopes = Scope.getScopes(format(jsonNode.get("scope")));
-        expiresIn = jsonNode.get("expires_in").asInt();
-        timestamp = new Timestamp(System.currentTimeMillis());
+            // Extract data
+            accessToken = jsonNode.get("access_token").asText();
+            refreshToken = jsonNode.get("refresh_token").asText();
+            scopes = Scope.getScopes(format(jsonNode.get("scope")));
+            expiresIn = jsonNode.get("expires_in").asInt();
+            timestamp = new Timestamp(System.currentTimeMillis());
 
-        // Get user ID
-        id = Integer.parseInt(manager.getClient().getHelix().getUsers(accessToken, null, null).execute().getUsers().getFirst().getId());
+            // Get user ID
+            id = Integer.parseInt(manager.getClient().getHelix().getUsers(accessToken, null, null).execute().getUsers().getFirst().getId());
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse AuthToken: " + e.getMessage(), e);
+        }
 
         // Set next refresh
         new Thread(() -> {
@@ -70,16 +75,16 @@ public class AuthToken implements Serializable {
         return refreshToken;
     }
 
-    public Scope[] getScopes() {
+    public HashSet<Scope> getScopes() {
         return scopes;
     }
 
     public String getScopesAsString() {
-        return Arrays.stream(scopes).map(Scope::getScope).reduce((s1, s2) -> s1 + "+" + s2).orElse("");
+        return String.join("+", scopes.stream().map(Scope::getScope).toArray(String[]::new));
     }
 
     public boolean hasScope(Scope... scopes) {
-        return Arrays.stream(scopes).allMatch(scope -> Arrays.asList(this.scopes).contains(scope));
+        return Arrays.stream(scopes).allMatch(this.scopes::contains);
     }
 
     public int getExpiresIn() {

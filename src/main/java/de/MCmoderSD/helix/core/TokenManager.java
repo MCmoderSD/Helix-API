@@ -1,8 +1,9 @@
 package de.MCmoderSD.helix.core;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+
 import de.MCmoderSD.encryption.Encryption;
 import de.MCmoderSD.helix.database.SQL;
 import de.MCmoderSD.helix.enums.Scope;
@@ -10,19 +11,23 @@ import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.json.JsonUtility;
 import de.MCmoderSD.server.Server;
 import de.MCmoderSD.sql.Driver;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+
 import java.util.HashMap;
 import java.util.Set;
 
@@ -59,6 +64,9 @@ public class TokenManager {
         // Initialize Auth Tokens
         authTokens = sql.getAuthTokens();
 
+        // Refresh Auth Tokens
+        for (AuthToken token : authTokens.values()) refreshToken(token);
+
         // Initialize Server ToDo: Implement a better way to handle the server
         try {
             Server server = new Server("localhost", 8000, null, JsonUtility.loadJson("/server.json", false), true);
@@ -90,7 +98,7 @@ public class TokenManager {
     }
 
     // Parse token
-    private boolean parseToken(HttpResponse<String> response, @Nullable Integer id) throws JsonProcessingException {
+    private boolean parseToken(HttpResponse<String> response, @Nullable Integer id) {
 
         // Null check
         if (response == null || response.body() == null || response.body().isEmpty() || response.body().isBlank()) {
@@ -137,25 +145,20 @@ public class TokenManager {
 
     // Refresh token
     public void refreshToken(AuthToken token) {
-        try {
 
-            // Create body
-            String body = String.format(
-                    "client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token",
-                    clientId,
-                    clientSecret,
-                    token.getRefreshToken()
-            );
+        // Create body
+        String body = String.format(
+                "client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token",
+                clientId,
+                clientSecret,
+                token.getRefreshToken()
+        );
 
-            // Request token
-            boolean success = parseToken(sendRequest(createRequest(body)), token.getId());
+        // Request token
+        boolean success = parseToken(sendRequest(createRequest(body)), token.getId());
 
-            // Error message
-            if (!success) System.err.println("Failed to refresh token");
-
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to refresh token");
-        }
+        // Error message
+        if (!success) System.err.println("Failed to refresh token");
     }
 
     // Get authorization URL
@@ -209,6 +212,11 @@ public class TokenManager {
     // Callback handler
     private class CallbackHandler implements HttpHandler {
 
+        // Constants
+        private static final String SUCCESS_MESSAGE = "Successfully authenticated! \nYou can close this tab now!";
+        private static final String ERROR_MESSAGE = "Failed to authenticate, please try again";
+        private static final String INVALID_CODE_MESSAGE = "Invalid code, please try again";
+
         // Attributes
         private final TokenManager manager;
         private final Server server;
@@ -223,12 +231,14 @@ public class TokenManager {
         public void handle(HttpExchange exchange) throws IOException {
 
             // Variables
-            String text;
+            String responseMessage = INVALID_CODE_MESSAGE;
 
             // Extract code and scopes
             String query = exchange.getRequestURI().getQuery();
-            System.out.println("Query: " + query);
+
+            // Check if the query contains the code
             if (query != null && query.contains("code=")) {
+
                 // Create body
                 String body = String.format(
                         "client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=https://%s:%d/callback",
@@ -242,12 +252,13 @@ public class TokenManager {
                 // Parse token
                 boolean success = manager.parseToken(sendRequest(createRequest(body)), null);
 
-                text = success ? "Successfully authenticated! \nYou can close this tab now!" : "Failed to authenticate, please try again";
-            } else text = "Failed to authenticate, please try again";
+                // Print success message if parsing was successful
+                responseMessage = success ? SUCCESS_MESSAGE : ERROR_MESSAGE;
+            }
 
             // Send response
-            exchange.sendResponseHeaders(200, text.length());
-            exchange.getResponseBody().write(text.getBytes());
+            exchange.sendResponseHeaders(200, responseMessage.length());
+            exchange.getResponseBody().write(responseMessage.getBytes());
             exchange.getResponseBody().close();
         }
     }

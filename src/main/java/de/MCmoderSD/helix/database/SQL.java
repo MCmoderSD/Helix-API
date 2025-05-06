@@ -9,8 +9,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
@@ -59,19 +61,19 @@ public class SQL extends Driver {
         byte[] compressedData = Base64.getDecoder().decode(decryptedData);
 
         // Decompress the data
-        GZIPInputStream gzipStream = new GZIPInputStream(new ByteArrayInputStream(compressedData));
+        var gzipStream = new GZIPInputStream(new ByteArrayInputStream(compressedData));
 
         // Deserialize the object
-        ObjectInputStream objectInputStream = new ObjectInputStream(gzipStream);
+        var objectInputStream = new ObjectInputStream(gzipStream);
         return (AuthToken) objectInputStream.readObject();
     }
 
     private String encrypt(AuthToken token) throws IOException {
 
         // Initialize the streams
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        GZIPOutputStream gzipStream = new GZIPOutputStream(byteArrayOutputStream);
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipStream);
+        var byteArrayOutputStream = new ByteArrayOutputStream();
+        var gzipStream = new GZIPOutputStream(byteArrayOutputStream);
+        var objectOutputStream = new ObjectOutputStream(gzipStream);
 
         // Serialize the object
         objectOutputStream.writeObject(token);
@@ -87,7 +89,6 @@ public class SQL extends Driver {
         // Encrypt the Base64 string
         return encryption.encrypt(base64);
     }
-
 
     public AuthToken getAuthToken(Integer id) {
         try {
@@ -190,7 +191,6 @@ public class SQL extends Driver {
 
             // Variables
             String encrypted = encrypt(authToken);
-            System.out.println("ID: " + authToken.getId());
 
             // SQL statement to insert or update the token
             var statement = connection.prepareStatement(

@@ -1,5 +1,6 @@
 import com.fasterxml.jackson.databind.JsonNode;
 import de.MCmoderSD.helix.core.Client;
+import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.json.JsonUtility;
 
 import java.io.IOException;
@@ -18,5 +19,6 @@ public class Main {
 
         // Initialize API Client
         Client client = new Client(clientId, clientSecret);
+        System.out.println(client.getTokenManager().getAuthorizationUrl(Scope.values()));
     }
 }

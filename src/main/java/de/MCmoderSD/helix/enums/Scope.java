@@ -3,6 +3,7 @@ package de.MCmoderSD.helix.enums;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.Serializable;
+import java.util.HashSet;
 
 /**
  * The {@code Scope} enum represents different access permissions (scopes) for the Twitch API.
@@ -124,12 +125,12 @@ public enum Scope implements Serializable {
         return null;
     }
 
-    public static Scope[] getScopes(String scopes) {
+    public static HashSet<Scope> getScopes(String scopes) {
         if (scopes == null || scopes.isBlank()) throw new IllegalArgumentException("Scopes cannot be empty");
         String[] scopeArray = scopes.split("\\+");
-        Scope[] scopeList = new Scope[scopeArray.length];
-        for (var i = 0; i < scopeArray.length; i++) scopeList[i] = getScope(scopeArray[i]);
-        return scopeList;
+        HashSet<Scope> scopeHashSet = new HashSet<>();
+        for (String scope : scopeArray) scopeHashSet.add(getScope(scope));
+        return scopeHashSet;
     }
 
     public static String format(JsonNode scopes) {

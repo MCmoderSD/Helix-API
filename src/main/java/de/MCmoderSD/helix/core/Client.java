@@ -6,6 +6,7 @@ import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
 import com.github.twitch4j.TwitchClientBuilder;
 import com.github.twitch4j.helix.TwitchHelix;
 import de.MCmoderSD.helix.handler.RoleHandler;
+import de.MCmoderSD.helix.handler.UserHandler;
 
 public class Client {
 
@@ -22,6 +23,7 @@ public class Client {
     private final TokenManager manager;
 
     // Handlers
+    private final UserHandler userHandler;
     private final RoleHandler roleHandler;
 
     // Constructor
@@ -50,6 +52,7 @@ public class Client {
         manager = new TokenManager(this);
 
         // Initialize Handler
+        userHandler = new UserHandler(this);
         roleHandler = new RoleHandler(this);
     }
 
@@ -73,6 +76,10 @@ public class Client {
 
     public TokenManager getTokenManager() {
         return manager;
+    }
+
+    public UserHandler getUserHandler() {
+        return userHandler;
     }
 
     public RoleHandler getRoleHandler() {
