@@ -68,6 +68,40 @@ public class Client {
         channelHandler = new ChannelHandler(this);
     }
 
+    // Constructor
+    public Client(Server server, CredentialManager credentialManager) {
+
+        // Validate Configuration
+        if (!Configuration.validate()) throw new IllegalStateException("Configuration is not valid. Please check your config.");
+
+        // Set Credentials
+        this.clientId = Configuration.clientId;
+        this.clientSecret = Configuration.clientSecret;
+
+        // Initialize Credential TokenManager
+        this.credentialManager = credentialManager;
+
+        // Initialize Twitch Client
+        var twitchClient = TwitchClientBuilder.builder()
+                .withClientId(clientId)
+                .withClientSecret(clientSecret)
+                .withCredentialManager(credentialManager)
+                .withChatCommandsViaHelix(true)
+                .withEnableHelix(true)
+                .build();
+
+        // Initialize Helix
+        helix = twitchClient.getHelix();
+
+        // Initialize TokenManager
+        manager = new TokenManager(this, server);
+
+        // Initialize Handler
+        userHandler = new UserHandler(this);
+        roleHandler = new RoleHandler(this);
+        channelHandler = new ChannelHandler(this);
+    }
+
     // Setters
     public void addCredential(String accessToken) {
         credentialManager.addCredential(PROVIDER, new OAuth2Credential(PROVIDER, accessToken));
