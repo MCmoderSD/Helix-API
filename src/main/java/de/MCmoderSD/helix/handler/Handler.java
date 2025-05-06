@@ -3,6 +3,7 @@ package de.MCmoderSD.helix.handler;
 import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
+
 import de.MCmoderSD.helix.core.Client;
 import de.MCmoderSD.helix.core.TokenManager;
 

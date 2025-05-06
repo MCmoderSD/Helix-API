@@ -1,6 +1,7 @@
 package de.MCmoderSD.helix.database;
 
 import de.MCmoderSD.encryption.Encryption;
+import de.MCmoderSD.helix.config.Configuration;
 import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.sql.Driver;
 
@@ -25,10 +26,10 @@ public class SQL extends Driver {
     private final Encryption encryption;
 
     // Constructor
-    public SQL(DatabaseType databaseType, String database, Encryption encryption) {
+    public SQL(Encryption encryption) {
 
         // Call super constructor
-        super(databaseType, null, null, database, null, null);
+        super(Configuration.databaseType, Configuration.host, Configuration.port, Configuration.database, Configuration.username, Configuration.password);
 
         try {
 

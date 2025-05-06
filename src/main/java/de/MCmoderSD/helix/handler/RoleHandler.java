@@ -1,6 +1,15 @@
 package de.MCmoderSD.helix.handler;
 
-import com.github.twitch4j.helix.domain.*;
+import com.github.twitch4j.helix.domain.User;
+import com.github.twitch4j.helix.domain.Subscription;
+import com.github.twitch4j.helix.domain.SubscriptionList;
+import com.github.twitch4j.helix.domain.InboundFollow;
+import com.github.twitch4j.helix.domain.InboundFollowers;
+import com.github.twitch4j.helix.domain.HelixPagination;
+import com.github.twitch4j.helix.domain.Moderator;
+import com.github.twitch4j.helix.domain.ModeratorList;
+import com.github.twitch4j.helix.domain.ChannelEditorList;
+import com.github.twitch4j.helix.domain.ChannelVipList;
 
 import de.MCmoderSD.helix.core.Client;
 import de.MCmoderSD.helix.enums.Scope;
@@ -47,7 +56,7 @@ public class RoleHandler extends Handler {
         followerCache = new HashMap<>();
 
         // Initialize caches
-        manager.getAuthTokens().forEach((id, authToken) -> {
+        manager.getAuthTokens().forEach((id, authToken) -> new Thread(() -> {
 
             // Load moderators
             if (authToken.hasScope(Scope.MODERATION_READ)) moderatorCache.put(id, getModerators(id, null));
@@ -60,7 +69,8 @@ public class RoleHandler extends Handler {
 
             // Load followers
             if (authToken.hasScope(Scope.MODERATOR_READ_FOLLOWERS)) followerCache.put(id, getFollowers(id, null));
-        });
+
+        }).start());
     }
 
     private HashSet<ChannelModerator> convertModerators(Integer id, HashSet<Moderator> moderators) {

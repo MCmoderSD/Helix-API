@@ -1,16 +1,15 @@
 package de.MCmoderSD.helix.core;
 
-
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import de.MCmoderSD.encryption.Encryption;
+import de.MCmoderSD.helix.config.Configuration;
 import de.MCmoderSD.helix.database.SQL;
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.json.JsonUtility;
 import de.MCmoderSD.server.Server;
-import de.MCmoderSD.sql.Driver;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -31,6 +30,7 @@ import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Set;
 
+@SuppressWarnings("unused")
 public class TokenManager {
 
     // Constants
@@ -40,6 +40,7 @@ public class TokenManager {
     // Associations
     private final Client client;
     private final SQL sql;
+    private final Server server;
 
     // Credentials
     private final String clientId;
@@ -58,8 +59,7 @@ public class TokenManager {
         clientId = client.getClientId();
         clientSecret = client.getClientSecret();
 
-        // Initialize SQL ToDo: Implement a better way to handle the database
-        sql = new SQL(Driver.DatabaseType.SQLITE, "database.db", new Encryption(clientSecret));
+        sql = new SQL(new Encryption(clientSecret));
 
         // Initialize Auth Tokens
         authTokens = sql.getAuthTokens();
@@ -69,7 +69,7 @@ public class TokenManager {
 
         // Initialize Server ToDo: Implement a better way to handle the server
         try {
-            Server server = new Server("localhost", 8000, null, JsonUtility.loadJson("/server.json", false), true);
+            server = new Server(Configuration.serverHost, Configuration.serverPort, null, JsonUtility.loadJson("/server.json", false), true);
             server.start();
             server.getHttpsServer().createContext("/callback", new CallbackHandler(this, server));
         } catch (IOException | URISyntaxException | NoSuchAlgorithmException | KeyStoreException |
@@ -166,10 +166,11 @@ public class TokenManager {
         StringBuilder scopeBuilder = new StringBuilder();
         for (Scope scope : Set.of(scopes)) scopeBuilder.append(scope.getScope()).append("+");
         return String.format(
-                "%s?client_id=%s&redirect_uri=%s/callback&response_type=code&scope=%s",
+                "%s?client_id=%s&redirect_uri=https://%s:%d/callback&response_type=code&scope=%s",
                 AUTH_URL,
                 clientId,
-                "https://localhost:8000",   // ToDo: Change to server.getHostname()
+                server.getHostname(),
+                server.getPort(),
                 scopeBuilder.substring(0, scopeBuilder.length() - 1)
         );
     }

@@ -1,13 +1,21 @@
 import com.fasterxml.jackson.databind.JsonNode;
+import de.MCmoderSD.helix.config.Configuration;
 import de.MCmoderSD.helix.core.Client;
 import de.MCmoderSD.helix.enums.Scope;
+import de.MCmoderSD.helix.handler.ChannelHandler;
+import de.MCmoderSD.helix.handler.RoleHandler;
+import de.MCmoderSD.helix.handler.UserHandler;
 import de.MCmoderSD.helix.objects.ChannelFollower;
+
 import de.MCmoderSD.json.JsonUtility;
+import de.MCmoderSD.sql.Driver;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
+@SuppressWarnings("ALL")
 public class Main {
 
     public static void main(String[] args) throws IOException, URISyntaxException {
@@ -15,19 +23,40 @@ public class Main {
         // Load Config
         JsonNode config = JsonUtility.loadJson("/config.json", false);
 
-        // Credentials
-        String clientId = config.get("clientId").asText();
-        String clientSecret = config.get("clientSecret").asText();
+        // Configure Helix
+        Configuration.setClientId(config.get("clientId").asText());
+        Configuration.setClientSecret(config.get("clientSecret").asText());
+
+        // Configure Database
+        Configuration.setDatabaseType(Driver.DatabaseType.SQLITE);
+        Configuration.setDatabase("database.db");
+
+        // Configure Server
+        Configuration.setServerHost("localhost");
+        Configuration.setServerPort(8000);
 
         // Initialize API Client
-        Client client = new Client(clientId, clientSecret);
+        Client client = new Client();
         System.out.println(client.getTokenManager().getAuthorizationUrl(Scope.values()));
 
-        var userHandler = client.getUserHandler();
-        var roleHandler = client.getRoleHandler();
+        Scanner scanner = new Scanner(System.in);
+        while (true) printChannelInfo(scanner.nextLine(), client.getUserHandler(), client.getChannelHandler());
+    }
 
-        // Get UserID
-        var user = userHandler.getTwitchUser("r4kunnn");
+    private static void printChannelInfo(String channel, UserHandler userHandler, ChannelHandler channelHandler) {
+
+        // Get User
+        var user = userHandler.getTwitchUser(channel);
+        System.out.println("User: " + user.getDisplayName() + " (" + user.getId() + ")");
+
+        // Get Channel Information and print it
+        channelHandler.getChannelInformation(user.getId()).print();
+    }
+
+    private static void printModerators(String channel, UserHandler userHandler, RoleHandler roleHandler) {
+
+        // Get User
+        var user = userHandler.getTwitchUser(channel);
         System.out.println("User: " + user.getDisplayName() + " (" + user.getId() + ")");
 
         // Get Moderators
@@ -38,6 +67,13 @@ public class Main {
                 moderator.getId(),
                 moderator.getBroadcasterType()
         ));
+    }
+
+    private static void printEditors(String channel, UserHandler userHandler, RoleHandler roleHandler) {
+
+        // Get User
+        var user = userHandler.getTwitchUser(channel);
+        System.out.println("User: " + user.getDisplayName() + " (" + user.getId() + ")");
 
         // Get Editors
         var editors = roleHandler.getEditors(user.getId());
@@ -47,6 +83,13 @@ public class Main {
                 editor.getId(),
                 editor.getBroadcasterType()
         ));
+    }
+
+    private static void printVips(String channel, UserHandler userHandler, RoleHandler roleHandler) {
+
+        // Get User
+        var user = userHandler.getTwitchUser(channel);
+        System.out.println("User: " + user.getDisplayName() + " (" + user.getId() + ")");
 
         // Get Vips
         var vips = roleHandler.getVIPs(user.getId(), null);
@@ -56,13 +99,25 @@ public class Main {
                 vip.getId(),
                 vip.getBroadcasterType()
         ));
+    }
 
+    private static void printSubscribers(String channel, UserHandler userHandler, RoleHandler roleHandler) {
+
+        // Get User
+        var user = userHandler.getTwitchUser(channel);
+        System.out.println("User: " + user.getDisplayName() + " (" + user.getId() + ")");
 
         // Get Subscriber
         var subscriber = roleHandler.getSubscribers(user.getId(), null);
         System.out.println("\nSubscriber: " + subscriber.size());
         for (var sub : subscriber) sub.print();
+    }
 
+    private static void printFollowers(String channel, UserHandler userHandler, RoleHandler roleHandler) {
+
+        // Get User
+        var user = userHandler.getTwitchUser(channel);
+        System.out.println("User: " + user.getDisplayName() + " (" + user.getId() + ")");
 
         // Get Follower
         var followers = roleHandler.getFollowers(user.getId(), null);

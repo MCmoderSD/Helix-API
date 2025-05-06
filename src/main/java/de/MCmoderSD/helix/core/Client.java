@@ -3,11 +3,16 @@ package de.MCmoderSD.helix.core;
 import com.github.philippheuer.credentialmanager.CredentialManager;
 import com.github.philippheuer.credentialmanager.CredentialManagerBuilder;
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
+
 import com.github.twitch4j.TwitchClientBuilder;
 import com.github.twitch4j.helix.TwitchHelix;
+
+import de.MCmoderSD.helix.config.Configuration;
+import de.MCmoderSD.helix.handler.ChannelHandler;
 import de.MCmoderSD.helix.handler.RoleHandler;
 import de.MCmoderSD.helix.handler.UserHandler;
 
+@SuppressWarnings("ALL")
 public class Client {
 
     // Constants
@@ -25,13 +30,17 @@ public class Client {
     // Handlers
     private final UserHandler userHandler;
     private final RoleHandler roleHandler;
+    private final ChannelHandler channelHandler;
 
     // Constructor
-    public Client(String clientId, String clientSecret) {
+    public Client() {
+
+        // Validate Configuration
+        if (!Configuration.validate()) throw new IllegalStateException("Configuration is not valid. Please check your config.");
 
         // Set Credentials
-        this.clientId = clientId;
-        this.clientSecret = clientSecret;
+        this.clientId = Configuration.clientId;
+        this.clientSecret = Configuration.clientSecret;
 
         // Initialize Credential TokenManager
         credentialManager = CredentialManagerBuilder.builder().build();
@@ -54,6 +63,7 @@ public class Client {
         // Initialize Handler
         userHandler = new UserHandler(this);
         roleHandler = new RoleHandler(this);
+        channelHandler = new ChannelHandler(this);
     }
 
     // Setters
@@ -84,5 +94,9 @@ public class Client {
 
     public RoleHandler getRoleHandler() {
         return roleHandler;
+    }
+
+    public ChannelHandler getChannelHandler() {
+        return channelHandler;
     }
 }
