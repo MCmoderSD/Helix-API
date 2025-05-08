@@ -4,8 +4,8 @@ import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 
-import de.MCmoderSD.helix.core.Client;
-import de.MCmoderSD.helix.core.TokenManager;
+import de.MCmoderSD.helix.core.HelixHandler;
+import de.MCmoderSD.helix.core.TokenHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,15 +18,15 @@ public abstract class Handler {
     protected static final Integer LIMIT = 100; // Max 100 per request (Default 20)
 
     // Associations
-    protected final Client client;
+    protected final HelixHandler helixHandler;
     protected final TwitchHelix helix;
-    protected final TokenManager manager;
+    protected final TokenHandler tokenHandler;
 
     // Constructor
-    public Handler(Client client) {
-        this.client = client;
-        this.helix = client.getHelix();
-        this.manager = client.getTokenManager();
+    public Handler(HelixHandler helixHandler) {
+        this.helixHandler = helixHandler;
+        this.helix = helixHandler.getHelix();
+        this.tokenHandler = helixHandler.getTokenHandler();
     }
 
     // Get user with ID

@@ -2,7 +2,7 @@ package de.MCmoderSD.helix.handler;
 
 import com.github.twitch4j.helix.domain.User;
 
-import de.MCmoderSD.helix.core.Client;
+import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.objects.ChannelInformation;
 
@@ -18,8 +18,8 @@ public class ChannelHandler extends Handler {
     };
 
     // Constructor
-    public ChannelHandler(Client client) {
-        super(client);
+    public ChannelHandler(HelixHandler helixHandler) {
+        super(helixHandler);
     }
 
     public void sendShoutout(Integer raider, Integer channel) {
@@ -29,7 +29,7 @@ public class ChannelHandler extends Handler {
         if (channel == null || channel > 0) throw new IllegalArgumentException("Channel ID cannot be null or less than 1");
 
         // Get access token
-        String accessToken = manager.getToken(channel, Scope.MODERATOR_MANAGE_SHOUTOUTS);
+        String accessToken = tokenHandler.getToken(channel, Scope.MODERATOR_MANAGE_SHOUTOUTS);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) throw new IllegalArgumentException("Access token cannot be null or empty");

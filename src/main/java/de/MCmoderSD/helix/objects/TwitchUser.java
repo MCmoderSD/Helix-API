@@ -2,9 +2,16 @@ package de.MCmoderSD.helix.objects;
 
 import com.github.twitch4j.helix.domain.User;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import java.time.Instant;
+import java.util.Base64;
+import java.util.zip.GZIPOutputStream;
 
 @SuppressWarnings("unused")
 public class TwitchUser implements Serializable {
@@ -41,6 +48,27 @@ public class TwitchUser implements Serializable {
         // Set enums
         broadcasterType = BroadcasterType.fromString(user.getBroadcasterType());    // Broadcaster type
         type = Type.fromString(user.getType());                                     // User type
+    }
+
+    private static String encodeImage(String url) throws IOException, URISyntaxException {
+
+        // Check if URL is valid
+        if (url == null || url.isBlank() || !url.startsWith("http")) {
+            System.err.println("Invalid URL: " + url);
+            return null;
+        }
+
+        // Download Image
+        var inputStream = new URI(url).toURL().openStream();
+
+        // Compress Image
+        var byteArrayOutputStream = new ByteArrayOutputStream();
+        var gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+        gzipOutputStream.write(url.getBytes());
+        gzipOutputStream.finish();
+
+        // Encode to Base64
+        return Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
     }
 
     // Methods
@@ -91,6 +119,14 @@ public class TwitchUser implements Serializable {
 
     public Type getType() {
         return type;
+    }
+
+    public String getCompressedProfileImageUrl() throws IOException, URISyntaxException {
+        return encodeImage(profileImageUrl);
+    }
+
+    public String getCompressedOfflineImageUrl() throws IOException, URISyntaxException {
+        return encodeImage(offlineImageUrl);
     }
 
     // Enums

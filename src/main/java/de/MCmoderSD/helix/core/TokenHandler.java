@@ -24,14 +24,14 @@ import java.util.HashMap;
 import java.util.Set;
 
 @SuppressWarnings("unused")
-public class TokenManager {
+public class TokenHandler {
 
     // Constants
     private static final String AUTH_URL = "https://id.twitch.tv/oauth2/authorize";
     private static final String TOKEN_URL = "https://id.twitch.tv/oauth2/token";
 
     // Associations
-    private final Client client;
+    private final HelixHandler helixHandler;
     private final Server server;
     private final SQL sql;
 
@@ -43,15 +43,15 @@ public class TokenManager {
     private final HashMap<Integer, AuthToken> authTokens;
 
     // Constructor
-    public TokenManager(Client client, Server server) {
+    public TokenHandler(HelixHandler helixHandler, Server server) {
 
         // Set Associations
-        this.client = client;
+        this.helixHandler = helixHandler;
         this.server = server;
 
         // Set Credentials
-        clientId = client.getClientId();
-        clientSecret = client.getClientSecret();
+        clientId = helixHandler.getClientId();
+        clientSecret = helixHandler.getClientSecret();
 
         sql = new SQL(new Encryption(clientSecret));
 
@@ -121,7 +121,7 @@ public class TokenManager {
         authTokens.replace(token.getId(), token);
 
         // Add Credentials
-        client.addCredential(token.getAccessToken());
+        helixHandler.addCredential(token.getAccessToken());
 
         // Update tokens in the database
         sql.addAuthToken(token);
@@ -162,9 +162,9 @@ public class TokenManager {
         );
     }
 
-    // Get client
-    public Client getClient() {
-        return client;
+    // Get helixHandler
+    public HelixHandler getClient() {
+        return helixHandler;
     }
 
     // Get token
@@ -206,12 +206,12 @@ public class TokenManager {
         private static final String INVALID_CODE_MESSAGE = "Invalid code, please try again";
 
         // Attributes
-        private final TokenManager manager;
+        private final TokenHandler tokenHandler;
         private final Server server;
 
         // Constructor
-        public CallbackHandler(TokenManager manager, Server server) {
-            this.manager = manager;
+        public CallbackHandler(TokenHandler tokenHandler, Server server) {
+            this.tokenHandler = tokenHandler;
             this.server = server;
         }
 
@@ -238,7 +238,7 @@ public class TokenManager {
                 );
 
                 // Parse token
-                boolean success = manager.parseToken(sendRequest(createRequest(body)), null);
+                boolean success = tokenHandler.parseToken(sendRequest(createRequest(body)), null);
 
                 // Print success message if parsing was successful
                 responseMessage = success ? SUCCESS_MESSAGE : ERROR_MESSAGE;

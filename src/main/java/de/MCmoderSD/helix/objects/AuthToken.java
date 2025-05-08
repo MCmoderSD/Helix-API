@@ -2,7 +2,7 @@ package de.MCmoderSD.helix.objects;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.MCmoderSD.helix.core.TokenManager;
+import de.MCmoderSD.helix.core.TokenHandler;
 import de.MCmoderSD.helix.enums.Scope;
 
 import java.io.Serializable;
@@ -25,7 +25,7 @@ public class AuthToken implements Serializable {
     private final Timestamp timestamp;
 
     // Constructor
-    public AuthToken(TokenManager manager, String responseBody) {
+    public AuthToken(TokenHandler tokenHandler, String responseBody) {
         try {
 
             // Parse JSON
@@ -39,7 +39,7 @@ public class AuthToken implements Serializable {
             timestamp = new Timestamp(System.currentTimeMillis());
 
             // Get user ID
-            id = Integer.parseInt(manager.getClient().getHelix().getUsers(accessToken, null, null).execute().getUsers().getFirst().getId());
+            id = Integer.parseInt(tokenHandler.getClient().getHelix().getUsers(accessToken, null, null).execute().getUsers().getFirst().getId());
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse AuthToken: " + e.getMessage(), e);
@@ -57,9 +57,29 @@ public class AuthToken implements Serializable {
             }
 
             // Refresh the token
-            manager.refreshToken(this);
+            tokenHandler.refreshToken(this);
 
         }).start();
+    }
+
+    // Constructor for existing tokens
+    public AuthToken(TokenHandler tokenHandler, Integer id, String accessToken, String refreshToken, HashSet<Scope> scopes) {
+
+        // Check Parameters
+        if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
+        if (accessToken == null || accessToken.isBlank()) throw new IllegalArgumentException("Access token cannot be null or empty");
+        if (refreshToken == null || refreshToken.isBlank()) throw new IllegalArgumentException("Refresh token cannot be null or empty");
+
+        // Set irrelevant attributes
+        this.id = id;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+        this.scopes = scopes;
+        expiresIn = null;
+        timestamp = null;
+
+        // Set next refresh
+        new Thread(() -> tokenHandler.refreshToken(this)).start();
     }
 
     // Getters

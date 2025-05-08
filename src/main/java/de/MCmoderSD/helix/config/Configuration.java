@@ -2,7 +2,7 @@ package de.MCmoderSD.helix.config;
 
 import de.MCmoderSD.sql.Driver;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "BooleanMethodIsAlwaysInverted"})
 public class Configuration {
 
     // Twitch API
@@ -94,9 +94,6 @@ public class Configuration {
             System.out.println("Password is not set.");
             valid = false;
         }
-
-        // Print result
-        System.out.println(valid ? "Configuration is valid." : "Configuration is not valid.");
 
         // Return result
         return valid;

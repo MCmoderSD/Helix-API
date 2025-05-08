@@ -11,7 +11,7 @@ import com.github.twitch4j.helix.domain.ModeratorList;
 import com.github.twitch4j.helix.domain.ChannelEditorList;
 import com.github.twitch4j.helix.domain.ChannelVipList;
 
-import de.MCmoderSD.helix.core.Client;
+import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.objects.ChannelFollower;
 import de.MCmoderSD.helix.objects.ChannelModerator;
@@ -44,10 +44,10 @@ public class RoleHandler extends Handler {
     private final HashMap<Integer, HashSet<ChannelFollower>> followerCache;
 
     // Constructor
-    public RoleHandler(Client client) {
+    public RoleHandler(HelixHandler helixHandler) {
 
         // Call super constructor
-        super(client);
+        super(helixHandler);
 
         // Initialize caches
         moderatorCache = new HashMap<>();
@@ -56,7 +56,7 @@ public class RoleHandler extends Handler {
         followerCache = new HashMap<>();
 
         // Initialize caches
-        manager.getAuthTokens().forEach((id, authToken) -> new Thread(() -> {
+        tokenHandler.getAuthTokens().forEach((id, authToken) -> new Thread(() -> {
 
             // Load moderators
             if (authToken.hasScope(Scope.MODERATION_READ)) moderatorCache.put(id, getModerators(id, null));
@@ -183,7 +183,7 @@ public class RoleHandler extends Handler {
         if (id == null || id < 1) throw new IllegalArgumentException("Channel ID cannot be null or less than 1");
 
         // Get access token
-        String accessToken = manager.getToken(id, Scope.MODERATION_READ);
+        String accessToken = tokenHandler.getToken(id, Scope.MODERATION_READ);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {
@@ -236,7 +236,7 @@ public class RoleHandler extends Handler {
         if (id == null || id < 1) throw new IllegalArgumentException("Channel ID cannot be null or less than 1");
 
         // Get access token
-        String accessToken = manager.getToken(id, Scope.CHANNEL_READ_EDITORS);
+        String accessToken = tokenHandler.getToken(id, Scope.CHANNEL_READ_EDITORS);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {
@@ -283,7 +283,7 @@ public class RoleHandler extends Handler {
         if (id == null || id < 1) throw new IllegalArgumentException("Channel ID cannot be null or less than 1");
 
         // Get access token
-        String accessToken = manager.getToken(id, Scope.CHANNEL_READ_VIPS);
+        String accessToken = tokenHandler.getToken(id, Scope.CHANNEL_READ_VIPS);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {
@@ -336,7 +336,7 @@ public class RoleHandler extends Handler {
         if (id == null || id < 1) throw new IllegalArgumentException("Channel ID cannot be null or less than 1");
 
         // Get access token
-        String accessToken = manager.getToken(id, Scope.CHANNEL_READ_SUBSCRIPTIONS);
+        String accessToken = tokenHandler.getToken(id, Scope.CHANNEL_READ_SUBSCRIPTIONS);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {
@@ -387,7 +387,7 @@ public class RoleHandler extends Handler {
         if (id == null || id < 1) throw new IllegalArgumentException("Channel ID cannot be null or less than 1");
 
         // Get access token
-        String accessToken = manager.getToken(id, Scope.MODERATOR_READ_FOLLOWERS);
+        String accessToken = tokenHandler.getToken(id, Scope.MODERATOR_READ_FOLLOWERS);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {
@@ -470,7 +470,7 @@ public class RoleHandler extends Handler {
         if (isVIP(user, channel)) if (!removeVIP(user, channel)) return false;
 
         // Get access token
-        String accessToken = manager.getToken(channel, Scope.CHANNEL_MANAGE_MODERATORS);
+        String accessToken = tokenHandler.getToken(channel, Scope.CHANNEL_MANAGE_MODERATORS);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {
@@ -498,7 +498,7 @@ public class RoleHandler extends Handler {
         }
 
         // Get access token
-        String accessToken = manager.getToken(channel, Scope.CHANNEL_MANAGE_MODERATORS);
+        String accessToken = tokenHandler.getToken(channel, Scope.CHANNEL_MANAGE_MODERATORS);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {
@@ -529,7 +529,7 @@ public class RoleHandler extends Handler {
         if (isModerator(user, channel)) if (!removeModerator(user, channel)) return false;
 
         // Get access token
-        String accessToken = manager.getToken(channel, Scope.CHANNEL_MANAGE_VIPS);
+        String accessToken = tokenHandler.getToken(channel, Scope.CHANNEL_MANAGE_VIPS);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {
@@ -557,7 +557,7 @@ public class RoleHandler extends Handler {
         }
 
         // Get access token
-        String accessToken = manager.getToken(channel, Scope.CHANNEL_MANAGE_VIPS);
+        String accessToken = tokenHandler.getToken(channel, Scope.CHANNEL_MANAGE_VIPS);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {

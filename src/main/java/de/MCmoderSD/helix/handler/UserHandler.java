@@ -3,7 +3,7 @@ package de.MCmoderSD.helix.handler;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 
-import de.MCmoderSD.helix.core.Client;
+import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.objects.TwitchUser;
 
@@ -19,8 +19,8 @@ public class UserHandler extends Handler {
     };
 
     // Constructor
-    public UserHandler(Client client) {
-        super(client);
+    public UserHandler(HelixHandler helixHandler) {
+        super(helixHandler);
     }
 
     public TwitchUser getTwitchUser(Integer id) {
@@ -67,7 +67,7 @@ public class UserHandler extends Handler {
         if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
 
         // Get access token
-        String accessToken = manager.getToken(id, Scope.USER_READ_EMAIL);
+        String accessToken = tokenHandler.getToken(id, Scope.USER_READ_EMAIL);
 
         // Null check
         if (accessToken == null || accessToken.isBlank()) {
