@@ -15,7 +15,7 @@ import de.MCmoderSD.helix.handler.UserHandler;
 import de.MCmoderSD.server.Server;
 
 @SuppressWarnings("unused")
-public class Client {
+public class HelixHandler {
 
     // Constants
     public static final String PROVIDER = "twitch";
@@ -27,15 +27,15 @@ public class Client {
     // Attributes
     private final TwitchHelix helix;
     private final CredentialManager credentialManager;
-    private final TokenManager manager;
 
     // Handlers
+    private final TokenHandler tokenHandler;
     private final UserHandler userHandler;
     private final RoleHandler roleHandler;
     private final ChannelHandler channelHandler;
 
     // Constructor
-    public Client(Server server) {
+    public HelixHandler(Server server) {
 
         // Validate Configuration
         if (!Configuration.validate()) throw new IllegalStateException("Configuration is not valid. Please check your config.");
@@ -44,10 +44,10 @@ public class Client {
         this.clientId = Configuration.clientId;
         this.clientSecret = Configuration.clientSecret;
 
-        // Initialize Credential TokenManager
+        // Initialize Credential TokenHandler
         credentialManager = CredentialManagerBuilder.builder().build();
 
-        // Initialize Twitch Client
+        // Initialize Twitch HelixHandler
         var twitchClient = TwitchClientBuilder.builder()
                 .withClientId(clientId)
                 .withClientSecret(clientSecret)
@@ -59,44 +59,29 @@ public class Client {
         // Initialize Helix
         helix = twitchClient.getHelix();
 
-        // Initialize TokenManager
-        manager = new TokenManager(this, server);
-
-        // Initialize Handler
+        // Initialize Handlers
+        tokenHandler = new TokenHandler(this, server);
         userHandler = new UserHandler(this);
         roleHandler = new RoleHandler(this);
         channelHandler = new ChannelHandler(this);
     }
 
     // Constructor
-    public Client(Server server, CredentialManager credentialManager) {
+    public HelixHandler(Server server, TwitchHelix helix, CredentialManager credentialManager) {
 
         // Validate Configuration
         if (!Configuration.validate()) throw new IllegalStateException("Configuration is not valid. Please check your config.");
 
         // Set Credentials
-        this.clientId = Configuration.clientId;
-        this.clientSecret = Configuration.clientSecret;
+        clientId = Configuration.clientId;
+        clientSecret = Configuration.clientSecret;
 
-        // Initialize Credential TokenManager
+        // Set Parameters
         this.credentialManager = credentialManager;
+        this.helix = helix;
 
-        // Initialize Twitch Client
-        var twitchClient = TwitchClientBuilder.builder()
-                .withClientId(clientId)
-                .withClientSecret(clientSecret)
-                .withCredentialManager(credentialManager)
-                .withChatCommandsViaHelix(true)
-                .withEnableHelix(true)
-                .build();
-
-        // Initialize Helix
-        helix = twitchClient.getHelix();
-
-        // Initialize TokenManager
-        manager = new TokenManager(this, server);
-
-        // Initialize Handler
+        // Initialize Handlers
+        tokenHandler = new TokenHandler(this, server);
         userHandler = new UserHandler(this);
         roleHandler = new RoleHandler(this);
         channelHandler = new ChannelHandler(this);
@@ -120,8 +105,8 @@ public class Client {
         return helix;
     }
 
-    public TokenManager getTokenManager() {
-        return manager;
+    public TokenHandler getTokenHandler() {
+        return tokenHandler;
     }
 
     public UserHandler getUserHandler() {

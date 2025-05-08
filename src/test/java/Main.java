@@ -1,7 +1,7 @@
 import com.fasterxml.jackson.databind.JsonNode;
 
 import de.MCmoderSD.helix.config.Configuration;
-import de.MCmoderSD.helix.core.Client;
+import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.handler.ChannelHandler;
 import de.MCmoderSD.helix.handler.RoleHandler;
@@ -43,16 +43,16 @@ public class Main {
         Configuration.setDatabase("database.db");
 
         // Initialize Server
-        Server server = new Server("localhost", 8080, null, jks, true);
+        Server server = new Server("localhost", 8000, null, jks, true);
         server.start();
 
-        // Initialize API Client
-        Client client = new Client(server);
-        System.out.println("Auth URL: " + client.getTokenManager().getAuthorizationUrl(Scope.values()));
+        // Initialize HelixHandler
+        HelixHandler helixHandler = new HelixHandler(server);
+        System.out.println("Auth URL: " + helixHandler.getTokenHandler().getAuthorizationUrl(Scope.values()));
 
         // Test API
         Scanner scanner = new Scanner(System.in);
-        while (true) printChannelInfo(scanner.nextLine(), client.getUserHandler(), client.getChannelHandler());
+        while (true) printChannelInfo(scanner.nextLine(), helixHandler.getUserHandler(), helixHandler.getChannelHandler());
     }
 
     private static void printChannelInfo(String channel, UserHandler userHandler, ChannelHandler channelHandler) {
