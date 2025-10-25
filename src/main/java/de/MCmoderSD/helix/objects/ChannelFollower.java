@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 import java.time.Instant;
 
-@SuppressWarnings("unused")
+@SuppressWarnings("ALL")
 public class ChannelFollower extends TwitchUser implements Serializable {
 
     // Attributes
@@ -29,13 +29,40 @@ public class ChannelFollower extends TwitchUser implements Serializable {
         followedAt = follow.getFollowedAt(); // Date when the user followed the channel
     }
 
-    // Methods
-    public void print() {
-        System.out.println("------------------------------");
-        System.out.println("Channel Follower: " + getDisplayName());
-        System.out.println("Channel: " + channel.getDisplayName());
-        System.out.println("Followed at: " + followedAt);
-        System.out.println("------------------------------");
+    public ChannelFollower(InboundFollow follow, TwitchUser user, User channel) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel which is followed by this user
+        this.channel = new TwitchUser(channel);
+
+        // InboundFollow information
+        followedAt = follow.getFollowedAt(); // Date when the user followed the channel
+    }
+
+    public ChannelFollower(InboundFollow follow, User user, TwitchUser channel) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel which is followed by this user
+        this.channel = channel;
+
+        // InboundFollow information
+        followedAt = follow.getFollowedAt(); // Date when the user followed the channel
+    }
+
+    public ChannelFollower(InboundFollow follow, TwitchUser user, TwitchUser channel) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel which is followed by this user
+        this.channel = channel;
+
+        // InboundFollow information
+        followedAt = follow.getFollowedAt(); // Date when the user followed the channel
     }
 
     // Getter
@@ -45,5 +72,11 @@ public class ChannelFollower extends TwitchUser implements Serializable {
 
     public Instant getFollowedAt() {
         return followedAt;
+    }
+
+    // Methods
+    public boolean equals(ChannelFollower follower) {
+        if (follower == null) return false;
+        return super.equals(follower) && channel.equals(follower.channel) && followedAt.equals(follower.followedAt);
     }
 }

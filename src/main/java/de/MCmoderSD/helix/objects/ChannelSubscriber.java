@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 
-@SuppressWarnings("unused")
+@SuppressWarnings("ALL")
 public class ChannelSubscriber extends TwitchUser implements Serializable {
 
     // Attributes
@@ -37,16 +37,109 @@ public class ChannelSubscriber extends TwitchUser implements Serializable {
         this.gifter = gifter != null ? new TwitchUser(gifter) : null;   // Gifter (TwitchUser)
     }
 
-    // Methods
-    public void print() {
-        System.out.println("------------------------------");
-        System.out.println("Channel Subscriber: " + getDisplayName());
-        System.out.println("Channel: " + channel.getDisplayName());
-        System.out.println("Tier: " + tier);
-        System.out.println("Plan Name: " + planName);
-        System.out.println("Is Gift: " + isGift);
-        if (isGift) System.out.println("Gifter: " + gifter.getDisplayName());
-        System.out.println("------------------------------");
+    public ChannelSubscriber(Subscription subscription, TwitchUser user, User channel, @Nullable User gifter) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel where this user is a subscriber
+        this.channel = new TwitchUser(channel);
+
+        // Subscription information
+        tier = Tier.fromString(subscription.getTier());                 // Subscription tier
+        planName = subscription.getPlanName();                          // Subscription plan name
+        isGift = subscription.getIsGift();                              // Is this subscription a gift?
+        this.gifter = gifter != null ? new TwitchUser(gifter) : null;   // Gifter (TwitchUser)
+    }
+
+    public ChannelSubscriber(Subscription subscription, User user, TwitchUser channel, @Nullable User gifter) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel where this user is a subscriber
+        this.channel = channel;
+
+        // Subscription information
+        tier = Tier.fromString(subscription.getTier());                 // Subscription tier
+        planName = subscription.getPlanName();                          // Subscription plan name
+        isGift = subscription.getIsGift();                              // Is this subscription a gift?
+        this.gifter = gifter != null ? new TwitchUser(gifter) : null;   // Gifter (TwitchUser)
+    }
+
+    public ChannelSubscriber(Subscription subscription, User user, User channel, @Nullable TwitchUser gifter) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel where this user is a subscriber
+        this.channel = new TwitchUser(channel);
+
+        // Subscription information
+        tier = Tier.fromString(subscription.getTier());                 // Subscription tier
+        planName = subscription.getPlanName();                          // Subscription plan name
+        isGift = subscription.getIsGift();                              // Is this subscription a gift?
+        this.gifter = gifter;                                           // Gifter (TwitchUser)
+    }
+
+    public ChannelSubscriber(Subscription subscription, User user, TwitchUser channel, @Nullable TwitchUser gifter) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel where this user is a subscriber
+        this.channel = channel;
+
+        // Subscription information
+        tier = Tier.fromString(subscription.getTier());                 // Subscription tier
+        planName = subscription.getPlanName();                          // Subscription plan name
+        isGift = subscription.getIsGift();                              // Is this subscription a gift?
+        this.gifter = gifter;                                           // Gifter (TwitchUser)
+    }
+
+    public ChannelSubscriber(Subscription subscription, TwitchUser user, User channel, @Nullable TwitchUser gifter) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel where this user is a subscriber
+        this.channel = new TwitchUser(channel);
+
+        // Subscription information
+        tier = Tier.fromString(subscription.getTier());                 // Subscription tier
+        planName = subscription.getPlanName();                          // Subscription plan name
+        isGift = subscription.getIsGift();                              // Is this subscription a gift?
+        this.gifter = gifter;                                           // Gifter (TwitchUser)
+    }
+
+    public ChannelSubscriber(Subscription subscription, TwitchUser user, TwitchUser channel, @Nullable User gifter) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel where this user is a subscriber
+        this.channel = channel;
+
+        // Subscription information
+        tier = Tier.fromString(subscription.getTier());                 // Subscription tier
+        planName = subscription.getPlanName();                          // Subscription plan name
+        isGift = subscription.getIsGift();                              // Is this subscription a gift?
+        this.gifter = gifter != null ? new TwitchUser(gifter) : null;   // Gifter (TwitchUser)
+    }
+
+    public ChannelSubscriber(Subscription subscription, TwitchUser user, TwitchUser channel, @Nullable TwitchUser gifter) {
+
+        // Call super constructor
+        super(user);
+
+        // Channel where this user is a subscriber
+        this.channel = channel;
+
+        // Subscription information
+        tier = Tier.fromString(subscription.getTier());                 // Subscription tier
+        planName = subscription.getPlanName();                          // Subscription plan name
+        isGift = subscription.getIsGift();                              // Is this subscription a gift?
+        this.gifter = gifter;                                           // Gifter (TwitchUser)
     }
 
     // Getter
@@ -71,7 +164,7 @@ public class ChannelSubscriber extends TwitchUser implements Serializable {
     }
 
     // Enum
-    public enum Tier {
+    public enum Tier implements Serializable {
 
         // Values
         TIER_1, TIER_2, TIER_3;
@@ -89,5 +182,19 @@ public class ChannelSubscriber extends TwitchUser implements Serializable {
                 default -> null;
             };
         }
+    }
+
+    // Methods
+    public boolean equals(ChannelSubscriber subscriber) {
+        if (subscriber == null) return false;
+        boolean isEqual = super.equals(subscriber);
+        isEqual &= channel.equals(subscriber.channel);
+        isEqual &= tier == subscriber.tier;
+        isEqual &= planName.equals(subscriber.planName);
+        isEqual &= isGift == subscriber.isGift;
+        if (gifter == null && subscriber.gifter == null) isEqual &= true;
+        else if (gifter != null && subscriber.gifter != null) isEqual &= gifter.equals(subscriber.gifter);
+        else isEqual &= false;
+        return isEqual;
     }
 }

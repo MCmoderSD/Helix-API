@@ -59,9 +59,9 @@ public class ChannelInfo extends TwitchUser implements Serializable {
     // Methods
     public boolean equals(ChannelInfo info) {
         if (info == null) return false;
-        boolean isEqual = equals((TwitchUser) this);
+        boolean isEqual = super.equals(info);
         isEqual &= Objects.equals(title, info.title);
-        isEqual &= tags.containsAll(info.tags);
+        isEqual &= tags.containsAll(info.tags) && info.tags.containsAll(tags);
         isEqual &= Objects.equals(language, info.language);
         isEqual &= Objects.equals(gameId, info.gameId);
         isEqual &= Objects.equals(gameName, info.gameName);

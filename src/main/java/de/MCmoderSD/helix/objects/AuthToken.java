@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 
 @SuppressWarnings("unused")
 public class AuthToken implements Serializable {
@@ -141,5 +142,18 @@ public class AuthToken implements Serializable {
 
     public Timestamp getNextRefresh() {
         return nextRefresh;
+    }
+
+    // Methods
+    public boolean equals(AuthToken token) {
+        if (token == null) return false;
+        boolean isEqual = id.equals(token.id);
+        isEqual &= Objects.equals(accessToken, token.accessToken);
+        isEqual &= Objects.equals(refreshToken, token.refreshToken);
+        isEqual &= Objects.equals(expiresIn, token.expiresIn);
+        isEqual &= Objects.equals(timestamp, token.timestamp);
+        isEqual &= Objects.equals(nextRefresh, token.nextRefresh);
+        isEqual &= scopes.containsAll(token.scopes) && token.scopes.containsAll(scopes);
+        return isEqual;
     }
 }
