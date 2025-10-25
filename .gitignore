@@ -4,6 +4,11 @@
 *.iml
 *.ipr
 
+### Certificates ###
+certificates/account.key
+certificates/fullchain.pem
+certificates/privkey.pem
+
 ### Docs ###
 docs/java/
 
@@ -11,18 +16,10 @@ docs/java/
 out/artifacts/
 
 ### Resources ###
-/src/main/resources/META-INF/
-/src/main/resources/config.json
-/src/main/resources/server.json
-/src/test/resources/META-INF/
 /src/test/resources/config.json
-/src/test/resources/server.json
 
 ### Target ###
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
-### SQLite ###
-*.db
