@@ -1,5 +1,6 @@
 package de.MCmoderSD.helix.core;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.philippheuer.credentialmanager.CredentialManager;
 import com.github.philippheuer.credentialmanager.CredentialManagerBuilder;
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
@@ -7,84 +8,90 @@ import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
 import com.github.twitch4j.TwitchClientBuilder;
 import com.github.twitch4j.helix.TwitchHelix;
 
-import de.MCmoderSD.helix.config.Configuration;
+import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.handler.ChannelHandler;
 import de.MCmoderSD.helix.handler.RoleHandler;
 import de.MCmoderSD.helix.handler.UserHandler;
+import de.MCmoderSD.server.core.Server;
 
-import de.MCmoderSD.server.Server;
+import static de.MCmoderSD.helix.utilities.ConfigValidator.*;
 
-@SuppressWarnings("unused")
 public class HelixHandler {
 
     // Constants
-    public static final String PROVIDER = "twitch";
-
-    // Credentials
-    private final String clientId;
-    private final String clientSecret;
+    private static final String PROVIDER = "twitch";
 
     // Attributes
     private final TwitchHelix helix;
     private final CredentialManager credentialManager;
 
-    // Handlers
+    // Handler
     private final TokenHandler tokenHandler;
     private final UserHandler userHandler;
     private final RoleHandler roleHandler;
     private final ChannelHandler channelHandler;
 
     // Constructor
-    public HelixHandler(Server server) {
+    public HelixHandler(JsonNode application, JsonNode database, Server server) {
 
-        // Validate Configuration
-        if (!Configuration.validate()) throw new IllegalStateException("Configuration is not valid. Please check your config.");
+        // Validate Config
+        if (!validateApplicationConfig(application)) throw new IllegalArgumentException("Invalid Application Config");
+        if (!validateDatabaseConfig(database)) throw new IllegalArgumentException("Invalid Database Config");
 
-        // Set Credentials
-        this.clientId = Configuration.clientId;
-        this.clientSecret = Configuration.clientSecret;
+        // Check Server
+        if (server == null) throw new IllegalArgumentException("Server instance is null");
+
+        // Get Twitch Credentials
+        JsonNode credentials = application.get("credentials");
+        String clientId = credentials.get("clientId").asText();
+        String clientSecret = credentials.get("clientSecret").asText();
 
         // Initialize Credential TokenHandler
         credentialManager = CredentialManagerBuilder.builder().build();
 
         // Initialize Twitch HelixHandler
         var twitchClient = TwitchClientBuilder.builder()
-                .withClientId(clientId)
-                .withClientSecret(clientSecret)
-                .withCredentialManager(credentialManager)
-                .withChatCommandsViaHelix(true)
-                .withEnableHelix(true)
+                .withClientId(clientId)                     // Client ID
+                .withClientSecret(clientSecret)             // Client Secret
+                .withCredentialManager(credentialManager)   // Credential Manager
+                .withChatCommandsViaHelix(true)             // Enable Chat Commands via Helix
+                .withEnableHelix(true)                      // Enable Helix
                 .build();
 
         // Initialize Helix
         helix = twitchClient.getHelix();
 
+        // Initialize TokenHandler
+        tokenHandler = new TokenHandler(application, database, server, this);
+
         // Initialize Handlers
-        tokenHandler = new TokenHandler(this, server);
-        userHandler = new UserHandler(this);
-        roleHandler = new RoleHandler(this);
-        channelHandler = new ChannelHandler(this);
+        userHandler = new UserHandler(helix, tokenHandler);
+        roleHandler = new RoleHandler(helix, tokenHandler);
+        channelHandler = new ChannelHandler(helix, tokenHandler);
     }
 
-    // Constructor
-    public HelixHandler(Server server, TwitchHelix helix, CredentialManager credentialManager) {
+    public HelixHandler(JsonNode application, JsonNode database, Server server, TwitchHelix helix, CredentialManager credentialManager) {
 
-        // Validate Configuration
-        if (!Configuration.validate()) throw new IllegalStateException("Configuration is not valid. Please check your config.");
+        // Validate Config
+        if (!validateApplicationConfig(application)) throw new IllegalArgumentException("Invalid Application Config");
+        if (!validateDatabaseConfig(database)) throw new IllegalArgumentException("Invalid Database Config");
 
-        // Set Credentials
-        clientId = Configuration.clientId;
-        clientSecret = Configuration.clientSecret;
+        // Check Parameters
+        if (server == null) throw new IllegalArgumentException("Server instance is null");
+        if (helix == null) throw new IllegalArgumentException("TwitchHelix instance is null");
+        if (credentialManager == null) throw new IllegalArgumentException("CredentialManager instance is null");
 
-        // Set Parameters
-        this.credentialManager = credentialManager;
+        // Set Attributes
         this.helix = helix;
+        this.credentialManager = credentialManager;
+
+        // Initialize TokenHandler
+        tokenHandler = new TokenHandler(application, database, server, this);
 
         // Initialize Handlers
-        tokenHandler = new TokenHandler(this, server);
-        userHandler = new UserHandler(this);
-        roleHandler = new RoleHandler(this);
-        channelHandler = new ChannelHandler(this);
+        userHandler = new UserHandler(helix, tokenHandler);
+        roleHandler = new RoleHandler(helix, tokenHandler);
+        channelHandler = new ChannelHandler(helix, tokenHandler);
     }
 
     // Setters
@@ -93,20 +100,12 @@ public class HelixHandler {
     }
 
     // Getters
-    public String getClientId() {
-        return clientId;
-    }
-
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
     public TwitchHelix getHelix() {
         return helix;
     }
 
-    public TokenHandler getTokenHandler() {
-        return tokenHandler;
+    public String getAuthorizationUrl(Scope... scopes) {
+        return tokenHandler.getAuthorizationUrl(scopes);
     }
 
     public UserHandler getUserHandler() {

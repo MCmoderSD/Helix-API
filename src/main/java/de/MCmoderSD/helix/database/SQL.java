@@ -1,40 +1,39 @@
 package de.MCmoderSD.helix.database;
 
-import de.MCmoderSD.encryption.Encryption;
-import de.MCmoderSD.helix.config.Configuration;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import de.MCmoderSD.encryption.core.Encryption;
 import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.sql.Driver;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import java.util.HashSet;
+
+import static de.MCmoderSD.sql.Driver.DatabaseType.MARIADB;
+import static de.MCmoderSD.encryption.core.Encryption.*;
+import static de.MCmoderSD.tools.GZIP.*;
 
 @SuppressWarnings("unused")
 public class SQL extends Driver {
 
-    // Attributes
+    // Associations
     private final Encryption encryption;
 
     // Constructor
-    public SQL(Encryption encryption) {
+    public SQL(JsonNode config, Encryption encryption) {
 
         // Call super constructor
-        super(Configuration.databaseType, Configuration.host, Configuration.port, Configuration.database, Configuration.username, Configuration.password);
+        super(MARIADB, config);
+
+        // Set Associations
+        this.encryption = encryption;
 
         try {
-
-            // Set attributes
-            this.encryption = encryption;
 
             // Initialize tables
             connection.prepareStatement("CREATE TABLE IF NOT EXISTS " +
@@ -47,182 +46,141 @@ public class SQL extends Driver {
             ).execute();
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to initialize database tables: " + e.getMessage(), e);
         }
     }
 
-    private AuthToken decrypt(ResultSet resultSet) throws SQLException, IOException, ClassNotFoundException {
-
-        // Decrypt the token data
-        byte[] encryptedData = (resultSet.getBytes("token"));
-        String encryptedBase64 = new String(encryptedData);
-        String decryptedData = encryption.decrypt(encryptedBase64);
-
-        // Base64-Decode
-        byte[] compressedData = Base64.getDecoder().decode(decryptedData);
-
-        // Decompress the data
-        var gzipStream = new GZIPInputStream(new ByteArrayInputStream(compressedData));
-
-        // Deserialize the object
-        var objectInputStream = new ObjectInputStream(gzipStream);
-        return (AuthToken) objectInputStream.readObject();
+    private static AuthToken decrypt(byte[] data, Encryption encryption) {
+        try {
+            byte[] encryptedBytes = inflate(data);
+            byte[] decryptedBytes = encryption.decrypt(encryptedBytes);
+            return (AuthToken) deserialize(decryptedBytes);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to inflate and decrypt AuthToken: " + e.getMessage(), e);
+        }
     }
 
-    private String encrypt(AuthToken token) throws IOException {
-
-        // Initialize the streams
-        var byteArrayOutputStream = new ByteArrayOutputStream();
-        var gzipStream = new GZIPOutputStream(byteArrayOutputStream);
-        var objectOutputStream = new ObjectOutputStream(gzipStream);
-
-        // Serialize the object
-        objectOutputStream.writeObject(token);
-        objectOutputStream.flush();
-
-        // Compress the data
-        gzipStream.finish();
-
-        // Encode the compressed data to Base64
-        byte[] compressedBytes = byteArrayOutputStream.toByteArray();
-        String base64 = Base64.getEncoder().encodeToString(compressedBytes);
-
-        // Encrypt the Base64 string
-        return encryption.encrypt(base64);
+    private static byte[] encrypt(AuthToken token, Encryption encryption) {
+        try {
+            byte[] serializedBytes = serialize(token);
+            byte[] encryptedBytes = encryption.encrypt(serializedBytes);
+            return deflate(encryptedBytes);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to serialize, encrypt, and deflate AuthToken: " + e.getMessage(), e);
+        }
     }
 
     public AuthToken getAuthToken(Integer id) {
+
+        // Check id
+        if (id == null) throw new IllegalArgumentException("AuthToken id cannot be null");
+        if (id < 1) throw new IllegalArgumentException("AuthToken id must be greater than 0");
+
         try {
 
             // SQL statement to select the token
-            var statement = connection.prepareStatement(
-                    "SELECT * FROM AuthTokens WHERE id = ?"
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT token FROM AuthTokens WHERE id = ?"
             );
 
             // Set the parameters
-            statement.setInt(1, id);
-            var resultSet = statement.executeQuery();
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
 
             // Process the result set
-            if (resultSet.next()) return decrypt(resultSet);
+            AuthToken authToken = null;
+            if (resultSet.next()) authToken = decrypt(resultSet.getBytes("token"), encryption);
 
-        } catch (SQLException | IOException | ClassNotFoundException e) {
-            System.err.println(e.getMessage());
-        }
-
-        // Return null if no token is found
-        return null;
-    }
-
-    public HashMap<Integer, AuthToken> getAuthTokens(Integer... id) {
-        try {
-
-            // Variables
-            StringBuilder condition = new StringBuilder();
-            HashMap<Integer, AuthToken> authTokens = new HashMap<>();
-
-            // Build the condition string
-            for (var i = 0; i < id.length; i++) {
-                condition.append("id = ").append(id[i]);
-                if (i != id.length - 1) condition.append(" OR ");
-            }
-
-            // SQL statement to select the token
-            var statement = connection.prepareStatement(
-                    "SELECT * FROM AuthTokens WHERE " + condition
-            );
-
-            // Execute the query
-            var resultSet = statement.executeQuery();
-
-            // Process the result set
-            while (resultSet.next()) {
-                var token = decrypt(resultSet);
-                authTokens.put(token.getId(), token);
-            }
-
-            // Close the result set
+            // Close the result set and statement
             resultSet.close();
-            statement.close();
+            preparedStatement.close();
 
-            // Return the auth tokens
-            return authTokens;
+            // Return the auth token
+            return authToken;
 
-        } catch (SQLException | IOException | ClassNotFoundException e) {
-            System.err.println(e.getMessage());
-            return null;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to retrieve AuthToken with id " + id + ": " + e.getMessage(), e);
         }
     }
 
-    public HashMap<Integer, AuthToken> getAuthTokens() {
+    public HashSet<AuthToken> getAuthTokens() {
         try {
 
-            // Variables
-            HashMap<Integer, AuthToken> authTokens = new HashMap<>();
-
-            // SQL statement to select the token
-            var statement = connection.prepareStatement(
+            // SQL statement to select all tokens
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "SELECT token FROM AuthTokens"
             );
 
             // Execute the query
-            var resultSet = statement.executeQuery();
+            ResultSet resultSet = preparedStatement.executeQuery();
 
             // Process the result set
-            while (resultSet.next()) {
-                var token = decrypt(resultSet);
-                authTokens.put(token.getId(), token);
-            }
+            HashSet<AuthToken> authTokens = new HashSet<>();
+            while (resultSet.next()) authTokens.add(decrypt(resultSet.getBytes("token"), encryption));
 
-            // Close the result set
+            // Close the result set and statement
             resultSet.close();
-            statement.close();
+            preparedStatement.close();
 
             // Return the auth tokens
             return authTokens;
 
-        } catch (SQLException | IOException | ClassNotFoundException e) {
-            System.err.println(e.getMessage());
-            return null;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to retrieve AuthTokens: " + e.getMessage(), e);
         }
     }
 
     public void addAuthToken(AuthToken authToken) {
+
+        // Check authToken
+        if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
+
         try {
 
             // Variables
-            String encrypted = encrypt(authToken);
+            byte[] data = encrypt(authToken, encryption);
 
             // SQL statement to insert or update the token
-            var statement = connection.prepareStatement(
-                    "INSERT INTO AuthTokens (id, token) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET token = ?"
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "INSERT INTO AuthTokens (id, token) VALUES (?, ?) ON DUPLICATE KEY UPDATE token = ?"
             );
 
             // Set the parameters
-            statement.setInt(1, authToken.getId()); // insert id
-            statement.setString(2, encrypted);      // insert token
-            statement.setString(3, encrypted);      // update token
-            statement.executeUpdate(); // execute
+            preparedStatement.setInt(1, authToken.getId()); // insert id
+            preparedStatement.setBytes(2, data); // insert token
+            preparedStatement.setBytes(3, data); // update token
+            preparedStatement.executeUpdate(); // execute
 
-        } catch (SQLException | IOException e) {
-            System.err.println(e.getMessage());
+            // Close the statement
+            preparedStatement.close();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to add or update AuthToken with id " + authToken.getId() + ": " + e.getMessage(), e);
         }
     }
 
     public void deleteAuthToken(Integer id) {
+
+        // Check id
+        if (id == null) throw new IllegalArgumentException("AuthToken id cannot be null");
+        if (id < 1) throw new IllegalArgumentException("AuthToken id must be greater than 0");
+
         try {
 
             // SQL statement to delete the token
-            var statement = connection.prepareStatement(
+            PreparedStatement preparedStatement = connection.prepareStatement(
                     "DELETE FROM AuthTokens WHERE id = ?"
             );
 
             // Set the parameters
-            statement.setInt(1, id);
-            statement.executeUpdate(); // execute
+            preparedStatement.setInt(1, id);
+            preparedStatement.executeUpdate();
+
+            // Close the statement
+            preparedStatement.close();
 
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            throw new RuntimeException("Failed to delete AuthToken with id " + id + ": " + e.getMessage(), e);
         }
     }
 }
