@@ -56,6 +56,6 @@ public class Main {
                 .toArray(Scope[]::new);
 
         String authURL = helixHandler.getAuthorizationUrl(scopes);
-        System.out.println("\n\nAuthorization URL: " + authURL + "\n");
+        System.out.println("Authorization URL: " + authURL);
     }
 }
