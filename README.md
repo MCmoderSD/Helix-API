@@ -4,6 +4,12 @@
 This is a Java Helix-API wrapper for communicating with the Twitch Helix API.
 It provides a simple and easy-to-use interface for making requests to the Helix API endpoints.
 
+## Features
+- [Authentication](#initialisation-and-authentication): OAuth2 authentication and scope management
+- [User Information](#user-information): Retrieve user details, email, and profile information.
+- [Channel Information](#channel-information): Get channel details, stream information, and tags.
+- [Shoutouts](#send-shoutouts): Send shoutouts from one channel to another.
+
 ## Usage
 
 ### Maven
@@ -93,7 +99,7 @@ public class AuthExample {
 }
 ```
 
-### User Example
+### User Information
 ```java
 import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.handler.UserHandler;
@@ -139,6 +145,95 @@ public class UserExample {
         // Get User Email by ID and Username
         System.out.println("ID: " + userHandler.getUserMail(exampleId));            // By ID
         System.out.println("Name: " + userHandler.getUserMail(exampleUsername));    // By Username
+
+        // Exit
+        System.exit(0);
+    }
+}
+```
+
+## Channel Information
+```java
+import de.MCmoderSD.helix.core.HelixHandler;
+import de.MCmoderSD.helix.handler.ChannelHandler;
+import de.MCmoderSD.helix.handler.UserHandler;
+import de.MCmoderSD.helix.objects.ChannelInfo;
+
+import java.util.Arrays;
+
+@SuppressWarnings("ALL")
+public class InfoExample {
+
+    public static void main(String[] args) {
+
+        // Init HelixHandler
+        HelixHandler helixHandler = AuthExample.initHelix();
+        ChannelHandler channelHandler = helixHandler.getChannelHandler();
+        UserHandler userHandler = helixHandler.getUserHandler();
+
+        // Example Variables
+        var exampleId = 164284617;              // User ID
+        var exampleUsername = "MCmoderSD";      // Username/Display Name
+
+        // Get Channel Info
+        ChannelInfo infoById = channelHandler.getChannelInfo(exampleId);                        // By ID
+        ChannelInfo infoByName = channelHandler.getChannelInfo(exampleUsername);                // By Username/Display Name
+        ChannelInfo info = channelHandler.getChannelInfo(userHandler.getTwitchUser(exampleId)); // By TwitchUser
+
+        // Check both are the same
+        System.out.println("ChannelInfos are the same: " + infoById.equals(infoByName));
+
+        // Print Channel Info
+        System.out.println("\n------- Channel Info -------");
+        System.out.println("Channel ID: " + info.getId());
+        System.out.println("Display Name: " + info.getDisplayName());
+        System.out.println("Title: " + info.getTitle());
+        System.out.println("Game ID: " + info.getGameId());
+        System.out.println("Game Name: " + info.getGameName());
+        System.out.println("Language: " + info.getLanguage());
+        System.out.println("Tags: " + Arrays.toString(info.getTags().toArray()));
+        System.out.println("Branded Content: " + info.isBrandedContent());
+        System.out.println("-----------------------------------\n");
+
+        // Exit
+        System.exit(0);
+    }
+}
+```
+
+### Send Shoutouts
+```java
+import de.MCmoderSD.helix.core.HelixHandler;
+import de.MCmoderSD.helix.handler.ChannelHandler;
+import de.MCmoderSD.helix.handler.UserHandler;
+import de.MCmoderSD.helix.objects.TwitchUser;
+
+@SuppressWarnings("ALL")
+public class ShoutoutExample {
+
+    /**
+     * <p>Preconditions for sending a shoutout:</p>
+     * <ul>
+     *   <li>The source channel must be live and have at least one viewer.</li>
+     *   <li>The calling credentials must include the {@code MODERATOR_MANAGE_SHOUTOUTS} scope for the source channel.</li>
+     * </ul>
+     */
+    public static void main(String[] args) {
+
+        // Init HelixHandler
+        HelixHandler helixHandler = AuthExample.initHelix();
+        ChannelHandler channelHandler = helixHandler.getChannelHandler();
+        UserHandler userHandler = helixHandler.getUserHandler();
+
+        // Get Channels
+        TwitchUser user = userHandler.getTwitchUser("MCmoderSD");       // Channel to send shoutout to      (target)
+        TwitchUser channel = userHandler.getTwitchUser("Modersesel");   // Channel to send shoutout from    (source)
+        
+        // Send Shoutout
+        channelHandler.sendShoutout(user, channel);
+
+        // Exit
+        System.exit(0);
     }
 }
 ```
