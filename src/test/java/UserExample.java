@@ -42,5 +42,8 @@ public class UserExample {
         // Get User Email by ID and Username
         System.out.println("ID: " + userHandler.getUserMail(exampleId));            // By ID
         System.out.println("Name: " + userHandler.getUserMail(exampleUsername));    // By Username
+
+        // Exit
+        System.exit(0);
     }
 }

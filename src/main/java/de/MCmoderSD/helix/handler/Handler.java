@@ -2,11 +2,9 @@ package de.MCmoderSD.helix.handler;
 
 import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.User;
-import com.github.twitch4j.helix.domain.UserList;
 
 import de.MCmoderSD.helix.core.TokenHandler;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -41,7 +39,7 @@ public abstract class Handler {
         if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
 
         // Get user ID
-        UserList userList = helix.getUsers(null, Collections.singletonList(id.toString()), null).execute();
+        var userList = helix.getUsers(null, Collections.singletonList(id.toString()), null).execute();
 
         // Check Response
         if (userList == null) throw new IllegalStateException("Failed to get user with ID: " + id);
@@ -61,7 +59,7 @@ public abstract class Handler {
         if (username == null || username.isBlank() || username.contains(" ")) throw new IllegalStateException("Invalid username: " + username);
 
         // Get user ID
-        UserList userList = helix.getUsers(null, null, Collections.singletonList(username.toLowerCase())).execute();
+        var userList = helix.getUsers(null, null, Collections.singletonList(username.toLowerCase())).execute();
 
         // Check Response
         if (userList == null) throw new IllegalStateException("Failed to get user: " + username);
@@ -82,32 +80,21 @@ public abstract class Handler {
         for (var id : ids) if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
 
         // Check size and chunk
-        if (ids.size() > LIMIT) {
-            ArrayList<Integer> idList = new ArrayList<>(ids);
+        var size = ids.size();
+        if (size > LIMIT) {
             HashSet<User> users = new HashSet<>();
-            for (var i = 0; i < idList.size(); i += LIMIT) {
-                ArrayList<Integer> chunk = new ArrayList<>(idList.subList(i, Math.min(i + LIMIT, idList.size())));
-                users.addAll(getUsersByIDs(new HashSet<>(chunk)));
-            }
+            for (var i = 0; i < size; i += LIMIT) users.addAll(getUsersByIDs(new HashSet<>(ids.stream().toList().subList(i, Math.min(i + LIMIT, size)))));
             return users;
         }
 
         // Get user ID
-        UserList userList = helix.getUsers(null, ids.stream().map(String::valueOf).toList(), null).execute();
+        var userList = helix.getUsers(null, ids.stream().map(String::valueOf).toList(), null).execute();
 
         // Check Response
         if (userList == null) throw new IllegalStateException("Failed to get users with IDs: " + Arrays.toString(ids.toArray()));
         var users = userList.getUsers();
         if (users == null) throw new IllegalStateException("Failed to get users with IDs: " + Arrays.toString(ids.toArray()));
         if (users.isEmpty()) throw new IllegalStateException("No users found with IDs: " + Arrays.toString(ids.toArray()));
-
-        // Check sizes
-        var userSize = users.size();
-        var idSize = ids.size();
-
-        // Check if all users are found
-        if (userSize > idSize) throw new IllegalStateException("More users found than IDs provided: " + Arrays.toString(ids.toArray()));
-        if (userSize < idSize) throw new IllegalStateException("Less users found than IDs provided: " + Arrays.toString(ids.toArray()));
 
         // Return users
         return new HashSet<>(users);
@@ -121,32 +108,21 @@ public abstract class Handler {
         for (var username : usernames) if (username == null || username.isBlank() || username.contains(" ")) throw new IllegalStateException("Invalid username: " + username);
 
         // Check size and chunk
-        if (usernames.size() > LIMIT) {
-            ArrayList<String> nameList = new ArrayList<>(usernames);
+        var size = usernames.size();
+        if (size > LIMIT) {
             HashSet<User> users = new HashSet<>();
-            for (var i = 0; i < nameList.size(); i += LIMIT) {
-                ArrayList<String> chunk = new ArrayList<>(nameList.subList(i, Math.min(i + LIMIT, nameList.size())));
-                users.addAll(getUsersByName(new HashSet<>(chunk)));
-            }
+            for (var i = 0; i < size; i += LIMIT) users.addAll(getUsersByName(new HashSet<>(usernames.stream().toList().subList(i, Math.min(i + LIMIT, size)))));
             return users;
         }
 
         // Get user ID
-        UserList userList = helix.getUsers(null, null, usernames.stream().map(String::toLowerCase).toList()).execute();
+        var userList = helix.getUsers(null, null, usernames.stream().map(String::toLowerCase).toList()).execute();
 
         // Check Response
         if (userList == null) throw new IllegalStateException("Failed to get users with names: " + Arrays.toString(usernames.toArray()));
         var users = userList.getUsers();
         if (users == null) throw new IllegalStateException("Failed to get users with names: " + Arrays.toString(usernames.toArray()));
         if (users.isEmpty()) throw new IllegalStateException("No users found with names: " + Arrays.toString(usernames.toArray()));
-
-        // Check sizes
-        var userSize = users.size();
-        var nameSize = usernames.size();
-
-        // Check if all users are found
-        if (userSize > nameSize) throw new IllegalStateException("More users found than names provided: " + Arrays.toString(usernames.toArray()));
-        if (userSize < nameSize) throw new IllegalStateException("Less users found than names provided: " + Arrays.toString(usernames.toArray()));
 
         // Return users
         return new HashSet<>(users);

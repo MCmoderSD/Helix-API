@@ -1,74 +1,136 @@
 package de.MCmoderSD.helix.handler;
 
-import com.github.twitch4j.helix.domain.User;
+import com.github.twitch4j.helix.TwitchHelix;
 
-import de.MCmoderSD.helix.core.HelixHandler;
+import de.MCmoderSD.helix.core.TokenHandler;
 import de.MCmoderSD.helix.enums.Scope;
-import de.MCmoderSD.helix.objects.ChannelInformation;
+import de.MCmoderSD.helix.objects.AuthToken;
+import de.MCmoderSD.helix.objects.ChannelInfo;
+import de.MCmoderSD.helix.objects.TwitchUser;
 
 import java.util.Collections;
 import java.util.HashSet;
+
+import static de.MCmoderSD.helix.enums.Scope.MODERATOR_MANAGE_SHOUTOUTS;
 
 @SuppressWarnings("unused")
 public class ChannelHandler extends Handler {
 
     // Constants
     public static final Scope[] REQUIRED_SCOPES = {
-            Scope.MODERATOR_MANAGE_SHOUTOUTS // Send shoutouts
+            MODERATOR_MANAGE_SHOUTOUTS // Send shoutouts
     };
 
     // Constructor
-    public ChannelHandler(HelixHandler helixHandler) {
-        super(helixHandler);
+    public ChannelHandler(TwitchHelix helix, TokenHandler tokenHandler) {
+        super(helix, tokenHandler);
     }
 
-    public void sendShoutout(Integer raider, Integer channel) {
+
+
+
+
+    // Shoutout
+    public void sendShoutout(TwitchUser user, TwitchUser channel) {
 
         // Check Parameters
-        if (raider == null || raider > 0) throw new IllegalArgumentException("Raider ID cannot be null or less than 1");
-        if (channel == null || channel > 0) throw new IllegalArgumentException("Channel ID cannot be null or less than 1");
+        if (user == null) throw new IllegalArgumentException("User cannot be null");
+        if (channel == null) throw new IllegalArgumentException("Channel cannot be null");
 
-        // Get access token
-        String accessToken = tokenHandler.getToken(channel, Scope.MODERATOR_MANAGE_SHOUTOUTS);
+        // Get AuthToken
+        AuthToken authToken = tokenHandler.getAuthToken(channel.getId());
 
-        // Null check
-        if (accessToken == null || accessToken.isBlank()) throw new IllegalArgumentException("Access token cannot be null or empty");
+        // Check AuthToken
+        if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
+        if (!authToken.hasScope(MODERATOR_MANAGE_SHOUTOUTS)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + MODERATOR_MANAGE_SHOUTOUTS.getScope());
 
         // Send shoutout
-        helix.sendShoutout(accessToken, String.valueOf(channel), String.valueOf(raider), String.valueOf(channel)).execute();
+        helix.sendShoutout(
+                authToken.getAccessToken(),     // Access Token of the channel
+                channel.getId().toString(),     // Source ID
+                user.getId().toString(),        // Target ID
+                channel.getId().toString()      // Moderator ID (same as Source ID)
+        ).execute();
     }
 
-    public HashSet<ChannelInformation> getChannelInformation(HashSet<Integer> ids) {
+    public void sendShoutout(Integer user, Integer channel) {
+        sendShoutout(new TwitchUser(getUser(user)), new TwitchUser(getUser(channel)));
+    }
+
+    public void sendShoutout(String user, String channel) {
+        sendShoutout(new TwitchUser(getUser(user)), new TwitchUser(getUser(channel)));
+    }
+
+    public void sendShoutout(Integer user, String channel) {
+        sendShoutout(new TwitchUser(getUser(user)), new TwitchUser(getUser(channel)));
+    }
+
+    public void sendShoutout(String user, Integer channel) {
+        sendShoutout(new TwitchUser(getUser(user)), new TwitchUser(getUser(channel)));
+    }
+
+    public void sendShoutout(TwitchUser user, Integer channel) {
+        sendShoutout(user, new TwitchUser(getUser(channel)));
+    }
+
+    public void sendShoutout(TwitchUser user, String channel) {
+        sendShoutout(user, new TwitchUser(getUser(channel)));
+    }
+
+    public void sendShoutout(Integer user, TwitchUser channel) {
+        sendShoutout(new TwitchUser(getUser(user)), channel);
+    }
+
+    public void sendShoutout(String user, TwitchUser channel) {
+        sendShoutout(new TwitchUser(getUser(user)), channel);
+    }
+
+
+
+
+
+    // Channel Information
+    public HashSet<ChannelInfo> getChannelInfo(HashSet<TwitchUser> channels) {
 
         // Check Parameters
-        if (ids == null || ids.isEmpty()) throw new IllegalArgumentException("IDs cannot be null or empty");
-        if (ids.stream().anyMatch(id -> id == null || id < 1)) throw new IllegalArgumentException("ID cannot be null or less than 1");
+        if (channels == null || channels.isEmpty()) throw new IllegalArgumentException("Channels cannot be null or empty");
+
+        // Check size and chunk
+        var size = channels.size();
+        if (channels.size() > LIMIT) {
+            HashSet<ChannelInfo> channelInfo = new HashSet<>();
+            for (var i = 0; i < size; i += LIMIT) channelInfo.addAll(getChannelInfo(new HashSet<>(channels.stream().toList().subList(i, Math.min(i + LIMIT, size)))));
+            return channelInfo;
+        }
 
         // Get channel information
-        var information = helix.getChannelInformation(null, ids.stream().map(String::valueOf).toList()).execute();
+        var information = helix.getChannelInformation(null, channels.stream().map(channel -> channel.getId().toString()).toList()).execute();
 
         // Null check
-        if (information == null) {
-            System.err.println("Channel information could not be found");
-            return null;
-        }
+        if (information == null) throw new IllegalStateException("Failed to get channel information");
+        var channelInformation = information.getChannels();
+        if (channelInformation.isEmpty()) throw new IllegalStateException("Failed to get channel information");
 
-        // Return channel information
-        HashSet<ChannelInformation> channelInformation = new HashSet<>();
-        HashSet<User> users = getUsersByIDs(ids);
-        for (User user : users) {
-            for (var info : information.getChannels()) {
-                if (user.getId().equals(info.getBroadcasterId())) {
-                    channelInformation.add(new ChannelInformation(info, user));
-                }
-            }
-        }
+        // Map channel information to ChannelInfo objects
+        HashSet<ChannelInfo> channelInfo = new HashSet<>();
+        for (var channel : channels)
+            for (var info : channelInformation)
+                if (channel.getId().toString().equals(info.getBroadcasterId()))
+                    channelInfo.add(new ChannelInfo(info, channel));
 
-        // Return channel information
-        return channelInformation;
+        // Return channel info
+        return channelInfo;
     }
 
-    public ChannelInformation getChannelInformation(Integer id) {
-        return getChannelInformation(new HashSet<>(Collections.singletonList(id))).iterator().next();
+    public ChannelInfo getChannelInfo(TwitchUser channel) {
+        return getChannelInfo(new HashSet<>(Collections.singleton(channel))).iterator().next();
+    }
+
+    public ChannelInfo getChannelInfo(Integer channel) {
+        return getChannelInfo(getChannelInfo(new TwitchUser(getUser(channel))));
+    }
+
+    public ChannelInfo getChannelInfo(String channel) {
+        return getChannelInfo(getChannelInfo(new TwitchUser(getUser(channel))));
     }
 }
