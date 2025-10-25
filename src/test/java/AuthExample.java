@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 @SuppressWarnings("ALL")
-public class Main {
+public class AuthExample {
 
     public static HelixHandler initHelix() {
 

@@ -1,26 +1,30 @@
 package de.MCmoderSD.helix.handler;
 
+import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 
-import de.MCmoderSD.helix.core.HelixHandler;
+import de.MCmoderSD.helix.core.TokenHandler;
 import de.MCmoderSD.helix.enums.Scope;
+import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.helix.objects.TwitchUser;
 
 import java.util.Collections;
 import java.util.HashSet;
 
-@SuppressWarnings("unused")
+import static de.MCmoderSD.helix.enums.Scope.USER_READ_EMAIL;
+
+@SuppressWarnings("ALL")
 public class UserHandler extends Handler {
 
     // Constants
     public static final Scope[] REQUIRED_SCOPES = {
-            Scope.USER_READ_EMAIL   // User email
+            USER_READ_EMAIL   // User email
     };
 
     // Constructor
-    public UserHandler(HelixHandler helixHandler) {
-        super(helixHandler);
+    public UserHandler(TwitchHelix helix, TokenHandler tokenHandler) {
+        super(helix, tokenHandler);
     }
 
     public TwitchUser getTwitchUser(Integer id) {
@@ -31,10 +35,6 @@ public class UserHandler extends Handler {
         return new TwitchUser(getUser(username));
     }
 
-    public TwitchUser getTwitchUser(Integer id, String username) {
-        return new TwitchUser(getUser(id, username));
-    }
-
     public HashSet<TwitchUser> getTwitchUsers(HashSet<Integer> ids) {
 
         // Variables
@@ -42,7 +42,7 @@ public class UserHandler extends Handler {
         HashSet<TwitchUser> twitchUsers = new HashSet<>();
 
         // Convert IDs to String
-        for (User user : users) twitchUsers.add(new TwitchUser(user));
+        for (var user : users) twitchUsers.add(new TwitchUser(user));
 
         // Return users
         return twitchUsers;
@@ -55,36 +55,46 @@ public class UserHandler extends Handler {
         HashSet<TwitchUser> twitchUsers = new HashSet<>();
 
         // Convert IDs to String
-        for (User user : users) twitchUsers.add(new TwitchUser(user));
+        for (var user : users) twitchUsers.add(new TwitchUser(user));
 
         // Return users
         return twitchUsers;
     }
 
-    public String getUserMail(Integer id) {
-
-        // Check Parameters
-        if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
-
-        // Get access token
-        String accessToken = tokenHandler.getToken(id, Scope.USER_READ_EMAIL);
+    public String getUserMail(TwitchUser twitchUser) {
 
         // Null check
-        if (accessToken == null || accessToken.isBlank()) {
-            System.err.println("Failed to get access token");
-            return null;
-        }
+        if (twitchUser == null) throw new IllegalArgumentException("TwitchUser cannot be null");
+
+        // Get AuthToken
+        AuthToken authToken = tokenHandler.getAuthToken(twitchUser.getId());
+
+        // Check AuthToken
+        if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
+        if (!authToken.hasScope(USER_READ_EMAIL)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + USER_READ_EMAIL.getScope());
 
         // Get user ID
-        UserList userList = helix.getUsers(accessToken, Collections.singletonList(String.valueOf(id)), null).execute();
+        UserList userList = helix.getUsers(
+                authToken.getAccessToken(),                                 // Access Token
+                Collections.singletonList(twitchUser.getId().toString()),   // ID
+                Collections.singletonList(twitchUser.getUsername())         // Username
+        ).execute();
 
         // Null check
-        if (userList == null || userList.getUsers() == null || userList.getUsers().isEmpty()) {
-            System.err.println("Failed to get user with ID: " + id);
-            return null;
-        }
+        if (userList == null) throw new IllegalStateException("Failed to get user email");
+        var users = userList.getUsers();
+        if (users == null || users.isEmpty()) throw new IllegalStateException("Failed to get user email");
+        if (users.size() > 1) throw new IllegalStateException("Multiple users found when getting email for user: " + twitchUser.getId() + " / " + twitchUser.getUsername());
 
-        // Return user
-        return userList.getUsers().getFirst().getEmail();
+        // Return email
+        return users.getFirst().getEmail();
+    }
+
+    public String getUserMail(Integer id) {
+        return getUserMail(getTwitchUser(id));
+    }
+
+    public String getUserMail(String username) {
+        return getUserMail(getTwitchUser(username));
     }
 }

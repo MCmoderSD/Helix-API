@@ -4,12 +4,13 @@ import com.github.twitch4j.helix.TwitchHelix;
 import com.github.twitch4j.helix.domain.User;
 import com.github.twitch4j.helix.domain.UserList;
 
-import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.core.TokenHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Arrays;
 
 @SuppressWarnings("unused")
 public abstract class Handler {
@@ -18,15 +19,19 @@ public abstract class Handler {
     protected static final Integer LIMIT = 100; // Max 100 per request (Default 20)
 
     // Associations
-    protected final HelixHandler helixHandler;
     protected final TwitchHelix helix;
     protected final TokenHandler tokenHandler;
 
     // Constructor
-    public Handler(HelixHandler helixHandler) {
-        this.helixHandler = helixHandler;
-        this.helix = helixHandler.getHelix();
-        this.tokenHandler = helixHandler.getTokenHandler();
+    public Handler(TwitchHelix helix, TokenHandler tokenHandler) {
+
+        // Check Parameters
+        if (helix == null) throw new IllegalArgumentException("TwitchHelix cannot be null");
+        if (tokenHandler == null) throw new IllegalArgumentException("TokenHandler cannot be null");
+
+        // Set Associations
+        this.helix = helix;
+        this.tokenHandler = tokenHandler;
     }
 
     // Get user with ID
@@ -36,55 +41,37 @@ public abstract class Handler {
         if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
 
         // Get user ID
-        UserList userList = helix.getUsers(null, Collections.singletonList(String.valueOf(id)), null).execute();
+        UserList userList = helix.getUsers(null, Collections.singletonList(id.toString()), null).execute();
 
-        // Null check
-        if (userList == null || userList.getUsers() == null || userList.getUsers().isEmpty()) {
-            System.err.println("Failed to get user with ID: " + id);
-            return null;
-        }
+        // Check Response
+        if (userList == null) throw new IllegalStateException("Failed to get user with ID: " + id);
+        var users = userList.getUsers();
+        if (users == null) throw new IllegalStateException("Failed to get user with ID: " + id);
+        if (users.isEmpty()) throw new IllegalStateException("No user found with ID: " + id);
+        if (users.size() != 1) throw new IllegalStateException("Multiple users found with ID: " + id);
 
         // Return user
-        return userList.getUsers().getFirst();
+        return users.getFirst();
     }
 
     // Get user with name
     public User getUser(String username) {
 
         // Check Parameters
-        if (username == null || username.isBlank()) throw new IllegalArgumentException("Username cannot be empty");
+        if (username == null || username.isBlank() || username.contains(" ")) throw new IllegalStateException("Invalid username: " + username);
 
         // Get user ID
-        UserList userList = helix.getUsers(null, null, Collections.singletonList(username)).execute();
+        UserList userList = helix.getUsers(null, null, Collections.singletonList(username.toLowerCase())).execute();
 
-        // Null check
-        if (userList == null || userList.getUsers() == null || userList.getUsers().isEmpty()) {
-            System.err.println("Failed to get user with name: " + username);
-            return null;
-        }
-
-        // Return user
-        return userList.getUsers().getFirst();
-    }
-
-    // Get user with ID and name
-    public User getUser(Integer id, String username) {
-
-        // Check Parameters
-        if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
-        if (username == null || username.isBlank()) throw new IllegalArgumentException("Username cannot be empty");
-
-        // Get user ID
-        UserList userList = helix.getUsers(null, Collections.singletonList(String.valueOf(id)), Collections.singletonList(username)).execute();
-
-        // Null check
-        if (userList == null || userList.getUsers() == null || userList.getUsers().isEmpty()) {
-            System.err.println("Failed to get user with ID: " + id + " and name: " + username);
-            return null;
-        }
+        // Check Response
+        if (userList == null) throw new IllegalStateException("Failed to get user: " + username);
+        var users = userList.getUsers();
+        if (users == null) throw new IllegalStateException("Failed to get user: " + username);
+        if (users.isEmpty()) throw new IllegalStateException("No user found: " + username);
+        if (users.size() != 1) throw new IllegalStateException("Multiple users found: " + username);
 
         // Return user
-        return userList.getUsers().getFirst();
+        return users.getFirst();
     }
 
     // Get Users with IDs
@@ -92,7 +79,7 @@ public abstract class Handler {
 
         // Check Parameters
         if (ids == null || ids.isEmpty()) throw new IllegalArgumentException("IDs cannot be empty");
-        for (Integer id : ids) if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
+        for (var id : ids) if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
 
         // Check size and chunk
         if (ids.size() > LIMIT) {
@@ -108,14 +95,22 @@ public abstract class Handler {
         // Get user ID
         UserList userList = helix.getUsers(null, ids.stream().map(String::valueOf).toList(), null).execute();
 
-        // Null check
-        if (userList == null || userList.getUsers() == null || userList.getUsers().isEmpty()) {
-            System.err.println("Failed to get users with IDs: " + ids);
-            return null;
-        }
+        // Check Response
+        if (userList == null) throw new IllegalStateException("Failed to get users with IDs: " + Arrays.toString(ids.toArray()));
+        var users = userList.getUsers();
+        if (users == null) throw new IllegalStateException("Failed to get users with IDs: " + Arrays.toString(ids.toArray()));
+        if (users.isEmpty()) throw new IllegalStateException("No users found with IDs: " + Arrays.toString(ids.toArray()));
+
+        // Check sizes
+        var userSize = users.size();
+        var idSize = ids.size();
+
+        // Check if all users are found
+        if (userSize > idSize) throw new IllegalStateException("More users found than IDs provided: " + Arrays.toString(ids.toArray()));
+        if (userSize < idSize) throw new IllegalStateException("Less users found than IDs provided: " + Arrays.toString(ids.toArray()));
 
         // Return users
-        return new HashSet<>(userList.getUsers());
+        return new HashSet<>(users);
     }
 
     // Get Users with names
@@ -123,7 +118,7 @@ public abstract class Handler {
 
         // Check Parameters
         if (usernames == null || usernames.isEmpty()) throw new IllegalArgumentException("Usernames cannot be empty");
-        for (String username : usernames) if (username == null || username.isBlank()) throw new IllegalArgumentException("Username cannot be empty");
+        for (var username : usernames) if (username == null || username.isBlank() || username.contains(" ")) throw new IllegalStateException("Invalid username: " + username);
 
         // Check size and chunk
         if (usernames.size() > LIMIT) {
@@ -137,15 +132,39 @@ public abstract class Handler {
         }
 
         // Get user ID
-        UserList userList = helix.getUsers(null, null, usernames.stream().toList()).execute();
+        UserList userList = helix.getUsers(null, null, usernames.stream().map(String::toLowerCase).toList()).execute();
 
-        // Null check
-        if (userList == null || userList.getUsers() == null || userList.getUsers().isEmpty()) {
-            System.err.println("Failed to get users with names: " + usernames);
-            return null;
-        }
+        // Check Response
+        if (userList == null) throw new IllegalStateException("Failed to get users with names: " + Arrays.toString(usernames.toArray()));
+        var users = userList.getUsers();
+        if (users == null) throw new IllegalStateException("Failed to get users with names: " + Arrays.toString(usernames.toArray()));
+        if (users.isEmpty()) throw new IllegalStateException("No users found with names: " + Arrays.toString(usernames.toArray()));
+
+        // Check sizes
+        var userSize = users.size();
+        var nameSize = usernames.size();
+
+        // Check if all users are found
+        if (userSize > nameSize) throw new IllegalStateException("More users found than names provided: " + Arrays.toString(usernames.toArray()));
+        if (userSize < nameSize) throw new IllegalStateException("Less users found than names provided: " + Arrays.toString(usernames.toArray()));
 
         // Return users
-        return new HashSet<>(userList.getUsers());
+        return new HashSet<>(users);
+    }
+
+    // Get User Map by IDs
+    public HashMap<Integer, User> getUsersByIDsMap(HashSet<Integer> ids) {
+        HashSet<User> users = getUsersByIDs(ids);
+        HashMap<Integer, User> userMap = new HashMap<>();
+        for (var user : users) userMap.put(Integer.parseInt(user.getId()), user);
+        return userMap;
+    }
+
+    // Get User Map by names
+    public HashMap<String, User> getUsersByNameMap(HashSet<String> usernames) {
+        HashSet<User> users = getUsersByName(usernames);
+        HashMap<String, User> userMap = new HashMap<>();
+        for (var user : users) userMap.put(user.getLogin(), user);
+        return userMap;
     }
 }

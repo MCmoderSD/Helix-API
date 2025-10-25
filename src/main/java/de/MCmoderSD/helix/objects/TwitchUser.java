@@ -2,18 +2,10 @@ package de.MCmoderSD.helix.objects;
 
 import com.github.twitch4j.helix.domain.User;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import java.time.Instant;
-import java.util.Base64;
-import java.util.zip.GZIPOutputStream;
 
-@SuppressWarnings("unused")
 public class TwitchUser implements Serializable {
 
     // Attributes
@@ -36,7 +28,7 @@ public class TwitchUser implements Serializable {
 
         // Attributes
         id = Integer.parseInt(user.getId());            // User ID
-        username = user.getLogin();                     // Username (lowercase)
+        username = user.getLogin().toLowerCase();       // Username (lowercase)
         createdAt = user.getCreatedAt();                // Created at
 
         // Custom Attributes
@@ -50,38 +42,22 @@ public class TwitchUser implements Serializable {
         type = Type.fromString(user.getType());                                     // User type
     }
 
-    private static String encodeImage(String url) throws IOException, URISyntaxException {
+    public TwitchUser(TwitchUser user) {
 
-        // Check if URL is valid
-        if (url == null || url.isBlank() || !url.startsWith("http")) {
-            System.err.println("Invalid URL: " + url);
-            return null;
-        }
+        // Attributes
+        id = user.id;                                   // User ID
+        username = user.username;                       // Username (lowercase)
+        createdAt = user.createdAt;                     // Created at
 
-        // Download Image
-        var inputStream = new URI(url).toURL().openStream();
+        // Custom Attributes
+        displayName = user.displayName;                 // Display name (upper and lowercase)
+        description = user.description;                 // Description
+        profileImageUrl = user.profileImageUrl;         // Profile image URL
+        offlineImageUrl = user.offlineImageUrl;         // Offline image URL
 
-        // Compress Image
-        var byteArrayOutputStream = new ByteArrayOutputStream();
-        var gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
-        gzipOutputStream.write(url.getBytes());
-        gzipOutputStream.finish();
-
-        // Encode to Base64
-        return Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
-    }
-
-    // Methods
-    public void print() {
-        System.out.println("------------------------------");
-        System.out.println("User ID: " + id);
-        System.out.println("Username: " + username);
-        System.out.println("Created at: " + createdAt);
-        System.out.println("Display name: " + displayName);
-        System.out.println("Description: " + description);
-        System.out.println("Broadcaster type: " + broadcasterType);
-        System.out.println("User type: " + type);
-        System.out.println("------------------------------");
+        // Set enums
+        broadcasterType = user.broadcasterType;         // Broadcaster type
+        type = user.type;                               // User type
     }
 
     // Getters
@@ -90,7 +66,7 @@ public class TwitchUser implements Serializable {
     }
 
     public String getUsername() {
-        return username;
+        return username.toLowerCase();
     }
 
     public Instant getCreatedAt() {
@@ -121,16 +97,8 @@ public class TwitchUser implements Serializable {
         return type;
     }
 
-    public String getCompressedProfileImageUrl() throws IOException, URISyntaxException {
-        return encodeImage(profileImageUrl);
-    }
-
-    public String getCompressedOfflineImageUrl() throws IOException, URISyntaxException {
-        return encodeImage(offlineImageUrl);
-    }
-
     // Enums
-    public enum BroadcasterType {
+    public enum BroadcasterType implements Serializable {
 
         // Values
         PARTNER,
@@ -147,7 +115,7 @@ public class TwitchUser implements Serializable {
         }
     }
 
-    public enum Type {
+    public enum Type implements Serializable {
 
         // Values
         ADMIN,
@@ -164,5 +132,11 @@ public class TwitchUser implements Serializable {
                 default -> USER;
             };
         }
+    }
+
+    // Methods
+    public boolean equals(TwitchUser user) {
+        if (user == null) return false;
+        return id.equals(user.id) && username.equals(user.username) && createdAt.equals(user.createdAt) && displayName.equals(user.displayName) && description.equals(user.description) && profileImageUrl.equals(user.profileImageUrl) && offlineImageUrl.equals(user.offlineImageUrl) && broadcasterType == user.broadcasterType && type == user.type;
     }
 }
