@@ -1,200 +1,168 @@
 package de.MCmoderSD.helix.core;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
+import com.fasterxml.jackson.databind.JsonNode;
 
-import de.MCmoderSD.encryption.Encryption;
-
+import de.MCmoderSD.encryption.core.Encryption;
 import de.MCmoderSD.helix.database.SQL;
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.objects.AuthToken;
+import de.MCmoderSD.server.core.Server;
 
-import de.MCmoderSD.server.Server;
-
-import org.jetbrains.annotations.Nullable;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
 
 import java.io.IOException;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 
-import java.util.HashMap;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 
-@SuppressWarnings("unused")
+import static de.MCmoderSD.encryption.enums.Hash.SHA3_256;
+import static de.MCmoderSD.encryption.enums.Transformer.AES_ECB_PKCS5;
+import static de.MCmoderSD.helix.utilities.ConfigValidator.*;
+
+@SuppressWarnings("UnusedReturnValue")
 public class TokenHandler {
 
-    // Constants
-    private static final String AUTH_URL = "https://id.twitch.tv/oauth2/authorize";
+    // Endpoints
     private static final String TOKEN_URL = "https://id.twitch.tv/oauth2/token";
+    private static final String AUTH_URL = "https://id.twitch.tv/oauth2/authorize";
 
     // Associations
     private final HelixHandler helixHandler;
-    private final Server server;
     private final SQL sql;
 
-    // Credentials
+    // Configuration
     private final String clientId;
     private final String clientSecret;
+    private final String redirectURL;
 
     // Attributes
-    private final HashMap<Integer, AuthToken> authTokens;
+    private final Builder requestBuilder;
+    private final ConcurrentHashMap<Integer, AuthToken> authTokens;
 
     // Constructor
-    public TokenHandler(HelixHandler helixHandler, Server server) {
+    public TokenHandler(JsonNode application, JsonNode database, Server server, HelixHandler helixHandler) {
+
+        // Validate Config
+        if (!validateApplicationConfig(application)) throw new IllegalArgumentException("Invalid Application config");
+        if (!validateDatabaseConfig(database)) throw new IllegalArgumentException("Invalid Database config");
+
+        // Check Associations
+        if (server == null) throw new IllegalArgumentException("Server is null");
+        if (helixHandler == null) throw new IllegalArgumentException("HelixHandler is null");
 
         // Set Associations
         this.helixHandler = helixHandler;
-        this.server = server;
 
-        // Set Credentials
-        clientId = helixHandler.getClientId();
-        clientSecret = helixHandler.getClientSecret();
+        // Load Application Config
+        JsonNode credentials = application.get("credentials");
+        clientId = credentials.get("clientId").asText();
+        clientSecret = credentials.get("clientSecret").asText();
+        redirectURL = application.get("oAuthRedirectURL").asText();
 
-        sql = new SQL(new Encryption(clientSecret));
+        // Initialize SQL
+        sql = new SQL(database, new Encryption(clientSecret, SHA3_256, AES_ECB_PKCS5));
 
-        // Initialize Auth Tokens
-        authTokens = sql.getAuthTokens();
+        // Initialize Request Builder
+        requestBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(TOKEN_URL))
+                .header("Content-Type", "application/x-www-form-urlencoded");
 
-        // Refresh Auth Tokens
-        for (AuthToken token : authTokens.values()) refreshToken(token);
+        // Load Tokens
+        authTokens = new ConcurrentHashMap<>();
+        var tokens = sql.getAuthTokens();
+        for (var token : tokens) refreshToken(token);
 
         // Register Callback Handler
-        server.getHttpsServer().createContext("/callback", new CallbackHandler(this, server));
+        server.registerExactPath(redirectURL.substring(redirectURL.lastIndexOf('/')), new CallbackHandler());
     }
 
-    // Create HTTP request
-    private static HttpRequest createRequest(String body) {
-        return HttpRequest.newBuilder()
-                .uri(URI.create(TOKEN_URL))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString(body))
+    private AuthToken requestToken(HttpRequest.BodyPublisher requestBody) {
+
+        // Validate Body
+        if (requestBody == null) throw new IllegalArgumentException("Request body cannot be null");
+        if (requestBody.contentLength() < 1) throw new IllegalArgumentException("Request body cannot be empty");
+
+        // Create Request
+        HttpRequest request = requestBuilder
+                .POST(requestBody)
                 .build();
-    }
 
-    // Send HTTP request
-    private static HttpResponse<String> sendRequest(HttpRequest request) {
+        // Send Request
+        HttpResponse<String> response;
         try {
-            return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+            response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            System.err.println("Failed to send request: " + e.getMessage());
-            return null;
-        }
-    }
-
-    // Parse token
-    private boolean parseToken(HttpResponse<String> response, @Nullable Integer id) {
-
-        // Null check
-        if (response == null || response.body() == null || response.body().isEmpty() || response.body().isBlank()) {
-            System.err.println("Failed to get response");
-            return false;
+            throw new RuntimeException("Failed to send request", e);
         }
 
-        // Check for invalid refresh token
-        if (response.body().contains("{\"status\":400,\"message\":\"Invalid refresh token\"}") && id != null) {
-            System.err.println("Invalid refresh token, please reauthorize the bot");
-            System.err.println("Deleting auth token");
-            authTokens.remove(id);
-            sql.deleteAuthToken(id);
-            return true;
-        }
-
-        // Check for error
-        if (response.statusCode() != 200) {
-            System.err.println("Failed to get token: " + response.body());
-            return false;
-        }
+        // Check Response
+        if (response == null) throw new RuntimeException("Failed to get token! Response is null");
+        if (response.statusCode() != 200) throw new RuntimeException("Failed to get token! Status Code: " + response.statusCode() + " Body: " + response.body());
+        if (response.body() == null) throw new RuntimeException("Failed to get token! Body is null");
+        if (response.body().isBlank()) throw new RuntimeException("Failed to get token! Body is empty");
 
         // Create new token
-        AuthToken token = new AuthToken(this, response.body());
-
-        // Null check
-        if (token.getAccessToken() == null) {
-            System.err.println("Failed to get access token");
-            return false;
-        }
-
-        // Add token
-        authTokens.replace(token.getId(), token);
-
-        // Add Credentials
-        helixHandler.addCredential(token.getAccessToken());
-
-        // Update tokens in the database
-        sql.addAuthToken(token);
-
-        // Return
-        return true;
+        return new AuthToken(response.body(), helixHandler.getHelix(), this);
     }
 
-    // Refresh token
-    public void refreshToken(AuthToken token) {
+    // Setter
+    public AuthToken refreshToken(AuthToken token) {
 
         // Create body
-        String body = String.format(
+        HttpRequest.BodyPublisher requestBody = HttpRequest.BodyPublishers.ofString(String.format(
                 "client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token",
                 clientId,
                 clientSecret,
                 token.getRefreshToken()
-        );
+        ));
 
-        // Request token
-        boolean success = parseToken(sendRequest(createRequest(body)), token.getId());
+        try {
 
-        // Error message
-        if (!success) System.err.println("Failed to refresh token");
+            // Request Token
+            AuthToken refreshedToken = requestToken(requestBody);           // Request new token
+            authTokens.put(refreshedToken.getId(), refreshedToken);         // Update in Memory
+            helixHandler.addCredential(refreshedToken.getAccessToken());    // Update in Helix
+            sql.addAuthToken(refreshedToken);                               // Update or add token in database
+            return refreshedToken;                                          // Return refreshed token
+
+        } catch (Exception e) {
+            sql.deleteAuthToken(token.getId());
+            throw new RuntimeException("Failed to refresh token: " + e.getMessage(), e);
+        }
     }
 
-    // Get authorization URL
-    public String getAuthorizationUrl(Scope... scopes) {
-        StringBuilder scopeBuilder = new StringBuilder();
-        for (Scope scope : Set.of(scopes)) scopeBuilder.append(scope.getScope()).append("+");
-        return String.format(
-                "%s?client_id=%s&redirect_uri=https://%s:%d/callback&response_type=code&scope=%s",
-                AUTH_URL,
-                clientId,
-                server.getHostname(),
-                server.getPort(),
-                scopeBuilder.substring(0, scopeBuilder.length() - 1)
-        );
+    // Getter
+    public AuthToken getAuthToken(Integer id) {
+        return authTokens.get(id);
     }
 
-    // Get helixHandler
-    public HelixHandler getClient() {
-        return helixHandler;
-    }
-
-    // Get token
-    public AuthToken getAuthToken(Integer channelId) {
-        return authTokens.get(channelId);
-    }
-
-    // Get tokens
-    public HashMap<Integer, AuthToken> getAuthTokens() {
+    public ConcurrentHashMap<Integer, AuthToken> getAuthTokens() {
         return authTokens;
     }
 
-    // Get token
-    public String getToken(Integer channelId) {
-        return authTokens.get(channelId).getAccessToken();
-    }
+    public String getAuthorizationUrl(Scope... scopes) {
 
-    // Get token
-    public String getToken(Integer channelId, Scope... scopes) {
+        // Build Scopes
+        StringBuilder scopeBuilder = new StringBuilder();
+        HashSet<Scope> scopeSet = new HashSet<>(Arrays.asList(scopes));
+        for (var scope : scopeSet) scopeBuilder.append(scope.getScope()).append("+");
 
-        // Check Parameters
-        if (channelId == null || channelId < 1) throw new IllegalArgumentException("Channel ID cannot be null or less than 1");
-        if (scopes == null || scopes.length == 0) throw new IllegalArgumentException("Scopes cannot be null or empty");
-
-        // Check if a token is available
-        if (!authTokens.containsKey(channelId)) throw new IllegalArgumentException("No token found for channel ID: " + channelId);
-        if (!authTokens.get(channelId).hasScope(scopes)) throw new IllegalArgumentException("Token does not have the required scopes");
-
-        // Refresh token
-        return authTokens.get(channelId).getAccessToken();
+        // Return URL
+        return String.format(
+                "%s?client_id=%s&redirect_uri=%s&response_type=code&scope=%s",
+                AUTH_URL,
+                clientId,
+                redirectURL,
+                scopeBuilder.isEmpty() ? "" : scopeBuilder.substring(0, scopeBuilder.length() - 1)
+        );
     }
 
     // Callback handler
@@ -205,49 +173,39 @@ public class TokenHandler {
         private static final String ERROR_MESSAGE = "Failed to authenticate, please try again";
         private static final String INVALID_CODE_MESSAGE = "Invalid code, please try again";
 
-        // Attributes
-        private final TokenHandler tokenHandler;
-        private final Server server;
-
-        // Constructor
-        public CallbackHandler(TokenHandler tokenHandler, Server server) {
-            this.tokenHandler = tokenHandler;
-            this.server = server;
-        }
-
         @Override
-        public void handle(HttpExchange exchange) throws IOException {
+        public void handleRequest(HttpServerExchange exchange) {
 
-            // Variables
-            String responseMessage = INVALID_CODE_MESSAGE;
-
-            // Extract code and scopes
-            String query = exchange.getRequestURI().getQuery();
+            // Get query
+            String query = exchange.getQueryString();
 
             // Check if the query contains the code
             if (query != null && query.contains("code=")) {
 
-                // Create body
-                String body = String.format(
-                        "client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=https://%s:%d/callback",
+                // Create Request Body
+                HttpRequest.BodyPublisher requestBody = HttpRequest.BodyPublishers.ofString(String.format(
+                        "client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=%s",
                         clientId,
                         clientSecret,
                         query.split("code=")[1].split("&")[0],
-                        server.getHostname(),
-                        server.getPort()
-                );
+                        redirectURL
+                ));
 
-                // Parse token
-                boolean success = tokenHandler.parseToken(sendRequest(createRequest(body)), null);
+                try {
 
-                // Print success message if parsing was successful
-                responseMessage = success ? SUCCESS_MESSAGE : ERROR_MESSAGE;
-            }
+                    // Request Token
+                    AuthToken token = requestToken(requestBody);            // Request new token
+                    authTokens.put(token.getId(), token);                   // Add to Memory
+                    helixHandler.addCredential(token.getAccessToken());     // Add to Helix
+                    sql.addAuthToken(token);                                // Add to database
 
-            // Send response
-            exchange.sendResponseHeaders(200, responseMessage.length());
-            exchange.getResponseBody().write(responseMessage.getBytes());
-            exchange.getResponseBody().close();
+                } catch (Exception e) {
+                    System.err.println("Failed to handle callback: " + e.getMessage());
+                    exchange.getResponseSender().send(ERROR_MESSAGE);
+                } finally {
+                    exchange.getResponseSender().send(SUCCESS_MESSAGE);
+                }
+            } else exchange.getResponseSender().send(INVALID_CODE_MESSAGE);
         }
     }
 }
