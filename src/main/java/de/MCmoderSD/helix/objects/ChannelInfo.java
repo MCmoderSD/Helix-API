@@ -4,6 +4,7 @@ import com.github.twitch4j.helix.domain.ChannelInformation;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class ChannelInfo extends TwitchUser implements Serializable {
 
@@ -58,6 +59,13 @@ public class ChannelInfo extends TwitchUser implements Serializable {
     // Methods
     public boolean equals(ChannelInfo info) {
         if (info == null) return false;
-        return this.equals((TwitchUser) info) && title.equals(info.title) && tags.containsAll(info.tags) && language.equals(info.language) && gameId.equals(info.gameId) && gameName.equals(info.gameName) && brandedContent == info.brandedContent;
+        boolean isEqual = equals((TwitchUser) this);
+        isEqual &= Objects.equals(title, info.title);
+        isEqual &= tags.containsAll(info.tags);
+        isEqual &= Objects.equals(language, info.language);
+        isEqual &= Objects.equals(gameId, info.gameId);
+        isEqual &= Objects.equals(gameName, info.gameName);
+        isEqual &= brandedContent == info.brandedContent;
+        return isEqual;
     }
 }

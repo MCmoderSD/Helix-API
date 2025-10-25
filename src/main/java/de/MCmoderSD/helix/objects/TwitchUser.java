@@ -5,6 +5,7 @@ import com.github.twitch4j.helix.domain.User;
 import java.io.Serializable;
 
 import java.time.Instant;
+import java.util.Objects;
 
 public class TwitchUser implements Serializable {
 
@@ -32,10 +33,10 @@ public class TwitchUser implements Serializable {
         createdAt = user.getCreatedAt();                // Created at
 
         // Custom Attributes
-        displayName = user.getDisplayName();            // Display name (upper and lowercase)
-        description = user.getDescription();            // Description
-        profileImageUrl = user.getProfileImageUrl();    // Profile image URL
-        offlineImageUrl = user.getOfflineImageUrl();    // Offline image URL
+        displayName = user.getDisplayName();                                                        // Display name (upper and lowercase)
+        description = user.getDescription().isBlank() ? null : user.getDescription();               // Description
+        profileImageUrl = user.getProfileImageUrl().isBlank() ? null : user.getProfileImageUrl();   // Profile image URL
+        offlineImageUrl = user.getOfflineImageUrl().isBlank() ? null : user.getOfflineImageUrl();   // Offline image URL
 
         // Set enums
         broadcasterType = BroadcasterType.fromString(user.getBroadcasterType());    // Broadcaster type
@@ -137,6 +138,15 @@ public class TwitchUser implements Serializable {
     // Methods
     public boolean equals(TwitchUser user) {
         if (user == null) return false;
-        return id.equals(user.id) && username.equals(user.username) && createdAt.equals(user.createdAt) && displayName.equals(user.displayName) && description.equals(user.description) && profileImageUrl.equals(user.profileImageUrl) && offlineImageUrl.equals(user.offlineImageUrl) && broadcasterType == user.broadcasterType && type == user.type;
+        boolean isEqual = id.equals(user.id);
+        isEqual &= username.equalsIgnoreCase(user.username);
+        isEqual &= createdAt.equals(user.createdAt);
+        isEqual &= Objects.equals(displayName, user.displayName);
+        isEqual &= Objects.equals(description, user.description);
+        isEqual &= Objects.equals(profileImageUrl, user.profileImageUrl);
+        isEqual &= Objects.equals(offlineImageUrl, user.offlineImageUrl);
+        isEqual &= broadcasterType == user.broadcasterType;
+        isEqual &= type == user.type;
+        return isEqual;
     }
 }
