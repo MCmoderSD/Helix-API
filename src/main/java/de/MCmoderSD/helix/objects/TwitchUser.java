@@ -139,7 +139,7 @@ public class TwitchUser implements Serializable {
     public boolean equals(TwitchUser user) {
         if (user == null) return false;
         boolean isEqual = id.equals(user.id);
-        isEqual &= username.equalsIgnoreCase(user.username);
+        isEqual &= username.equals(user.username);
         isEqual &= createdAt.equals(user.createdAt);
         isEqual &= Objects.equals(displayName, user.displayName);
         isEqual &= Objects.equals(description, user.description);

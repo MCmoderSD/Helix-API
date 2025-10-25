@@ -155,10 +155,8 @@ public class UserExample {
 ## Channel Information
 ```java
 import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.handler.ChannelHandler;
-import de.MCmoderSD.helix.handler.UserHandler;
 import de.MCmoderSD.helix.objects.ChannelInfo;
-
+import de.MCmoderSD.helix.handler.*;
 import java.util.Arrays;
 
 @SuppressWarnings("ALL")
@@ -204,9 +202,8 @@ public class InfoExample {
 ### Send Shoutouts
 ```java
 import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.handler.ChannelHandler;
-import de.MCmoderSD.helix.handler.UserHandler;
 import de.MCmoderSD.helix.objects.TwitchUser;
+import de.MCmoderSD.helix.handler.*;
 
 @SuppressWarnings("ALL")
 public class ShoutoutExample {
@@ -228,7 +225,7 @@ public class ShoutoutExample {
         // Get Channels
         TwitchUser user = userHandler.getTwitchUser("MCmoderSD");       // Channel to send shoutout to      (target)
         TwitchUser channel = userHandler.getTwitchUser("Modersesel");   // Channel to send shoutout from    (source)
-        
+
         // Send Shoutout
         channelHandler.sendShoutout(user, channel);
 

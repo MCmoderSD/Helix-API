@@ -1,7 +1,6 @@
 import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.handler.ChannelHandler;
-import de.MCmoderSD.helix.handler.UserHandler;
 import de.MCmoderSD.helix.objects.TwitchUser;
+import de.MCmoderSD.helix.handler.*;
 
 @SuppressWarnings("ALL")
 public class ShoutoutExample {
