@@ -64,11 +64,17 @@ public class RoleHandler extends Handler {
         // Initialize caches
         tokenHandler.getAuthTokens().forEach((id, authToken) -> new Thread(() -> {
 
+            // Check scopes
+            boolean moderators = authToken.hasScope(MODERATION_READ) || authToken.hasScope(CHANNEL_MANAGE_MODERATORS);
+            boolean vips = authToken.hasScope(CHANNEL_READ_VIPS) || authToken.hasScope(CHANNEL_MANAGE_VIPS);
+            boolean subscribers = authToken.hasScope(CHANNEL_READ_SUBSCRIPTIONS);
+            boolean followers = authToken.hasScope(MODERATOR_READ_FOLLOWERS);
+
             // Initialize empty cache
-            if (authToken.hasScope(MODERATION_READ)) moderatorCache.put(id, getModerators(id));                 // Moderators
-            if (authToken.hasScope(CHANNEL_READ_VIPS)) vipCache.put(id, getVIPs(id));                           // VIPs
-            if (authToken.hasScope(CHANNEL_READ_SUBSCRIPTIONS)) subscriberCache.put(id, getSubscribers(id));    // Subscribers
-            if (authToken.hasScope(MODERATOR_READ_FOLLOWERS)) followerCache.put(id, getFollowers(id));          // Followers
+            if (moderators) moderatorCache.put(id, getModerators(id));      // Moderators
+            if (vips) vipCache.put(id, getVIPs(id));                        // VIPs
+            if (subscribers) subscriberCache.put(id, getSubscribers(id));   // Subscribers
+            if (followers) followerCache.put(id, getFollowers(id));         // Followers
 
         }).start());
     }
@@ -137,7 +143,7 @@ public class RoleHandler extends Handler {
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
-        if (!authToken.hasScope(MODERATION_READ)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + MODERATION_READ.getScope());
+        if (!(authToken.hasScope(MODERATION_READ) || authToken.hasScope(CHANNEL_MANAGE_MODERATORS))) throw new IllegalArgumentException("AuthToken does not have the required scope: " + MODERATION_READ.getScope() + " or " + CHANNEL_MANAGE_MODERATORS.getScope());
 
         // Get moderators
         HashSet<ChannelModerator> moderators = getModerators(channel, authToken.getAccessToken(), null);
@@ -269,7 +275,7 @@ public class RoleHandler extends Handler {
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
-        if (!authToken.hasScope(CHANNEL_READ_VIPS)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + CHANNEL_READ_VIPS.getScope());
+        if (!(authToken.hasScope(CHANNEL_READ_VIPS) || authToken.hasScope(CHANNEL_MANAGE_VIPS))) throw new IllegalArgumentException("AuthToken does not have the required scope: " + CHANNEL_READ_VIPS.getScope() + " or " + CHANNEL_MANAGE_VIPS.getScope());
 
         // Get VIPs
         HashSet<ChannelVip> vips = getVIPs(channel, authToken.getAccessToken(), null);
@@ -530,7 +536,7 @@ public class RoleHandler extends Handler {
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
-        if (!authToken.hasScope(MODERATION_READ)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + MODERATION_READ.getScope());
+        if (!(authToken.hasScope(MODERATION_READ) || authToken.hasScope(CHANNEL_MANAGE_MODERATORS))) throw new IllegalArgumentException("AuthToken does not have the required scope: " + MODERATION_READ.getScope() + " or " + CHANNEL_MANAGE_MODERATORS.getScope());
 
         // Check size and chunk
         if (size > LIMIT) {
@@ -707,7 +713,7 @@ public class RoleHandler extends Handler {
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
-        if (!authToken.hasScope(CHANNEL_READ_VIPS)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + CHANNEL_READ_VIPS.getScope());
+        if (!(authToken.hasScope(CHANNEL_READ_VIPS) || authToken.hasScope(CHANNEL_MANAGE_VIPS))) throw new IllegalArgumentException("AuthToken does not have the required scope: " + CHANNEL_READ_VIPS.getScope() + " or " + CHANNEL_MANAGE_VIPS.getScope());
 
         // Check size and chunk
         if (size > LIMIT) {

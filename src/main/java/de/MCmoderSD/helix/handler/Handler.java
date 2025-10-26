@@ -77,7 +77,7 @@ public abstract class Handler {
 
         // Check Parameters
         if (ids == null || ids.isEmpty()) throw new IllegalArgumentException("IDs cannot be empty");
-        for (var id : ids) if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
+        for (var id : ids) if (id == null || id < 1) throw new IllegalArgumentException("Invalid ID in IDs: " + id);
 
         // Check size and chunk
         var size = ids.size();

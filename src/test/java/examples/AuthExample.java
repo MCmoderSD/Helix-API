@@ -1,10 +1,10 @@
+package examples;
+
 import com.fasterxml.jackson.databind.JsonNode;
 
 import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.enums.Scope;
-import de.MCmoderSD.helix.handler.ChannelHandler;
-import de.MCmoderSD.helix.handler.RoleHandler;
-import de.MCmoderSD.helix.handler.UserHandler;
+import de.MCmoderSD.helix.handler.*;
 
 import de.MCmoderSD.json.JsonUtility;
 import de.MCmoderSD.server.core.Server;
@@ -48,13 +48,14 @@ public class AuthExample {
         // Init HelixHandler
         HelixHandler helixHandler = initHelix();
 
-        // Print Authorization URL
-        Scope[] scopes = new ArrayList<>(Arrays.asList(UserHandler.REQUIRED_SCOPES, RoleHandler.REQUIRED_SCOPES, ChannelHandler.REQUIRED_SCOPES))
+        // Setup Scopes
+        Scope[] scopes = new ArrayList<>(Arrays.asList(UserHandler.REQUIRED_SCOPES, ChatHandler.REQUIRED_SCOPES, RoleHandler.REQUIRED_SCOPES, StreamHandler.REQUIRED_SCOPES, ChannelHandler.REQUIRED_SCOPES))
                 .stream()
                 .flatMap(Stream::of)
                 .distinct()
                 .toArray(Scope[]::new);
 
+        // Get Authorization URL
         String authURL = helixHandler.getAuthorizationUrl(scopes);
         System.out.println("Authorization URL: " + authURL);
     }
