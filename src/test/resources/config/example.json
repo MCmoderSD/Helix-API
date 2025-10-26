@@ -1,0 +1,78 @@
+{
+  "twitch": {
+    "application": {
+      "oAuthRedirectURL": "https://YourDomain.com/callback",
+      "credentials": {
+        "clientId":"Your Client ID",
+        "clientSecret":"Your Client Secret"
+      }
+    }
+  },
+
+  "server": {
+    "host": "0.0.0.0",
+    "httpPort": 80,
+    "httpsPort": 443,
+    "baseUrl": "/",
+
+    "certificate": {
+      "keyPassword": "Your Key Password",
+      "keySize": 4096,
+
+      "createIfMissing": true,
+      "paths": {
+        "privateKey": "path/to/your/private.pem",
+        "certificate": "path/to/your/certificate.pem"
+      },
+
+      "acmeSigned": {
+        "debug": true,
+        "email": "Your@Email.com",
+        "accountKey": "account.key",
+
+        "cloudflare": {
+          "zoneId": "Your Zone ID",
+          "apiToken": "Your API Key"
+        },
+
+        "domains": [
+          "example.com",
+          "www.example.com"
+        ]
+      },
+
+      "selfSigned": {
+        "expirationDays": 366,
+
+        "subject": {
+          "commonName": "localhost",
+          "organization": "Your Organization",
+          "organizationalUnit": "Your Organizational Unit",
+          "locality": "Your City",
+          "state": "Your State",
+          "country": "DE"
+        },
+
+        "subjectAltNames": {
+
+          "dns": [
+            "localhost"
+          ],
+
+          "ip": [
+            "127.0.0.1",
+            "::1"
+          ]
+        }
+      }
+    }
+  },
+
+  "database": {
+    "host":"Your Database Host",
+    "port":3306,
+    "database": "Your Database Name",
+    "username": "Your Database User",
+    "password": "Your Database Password"
+  }
+}
