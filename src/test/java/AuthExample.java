@@ -49,7 +49,7 @@ public class AuthExample {
         HelixHandler helixHandler = initHelix();
 
         // Print Authorization URL
-        Scope[] scopes = new ArrayList<>(Arrays.asList(UserHandler.REQUIRED_SCOPES, ChannelHandler.REQUIRED_SCOPES, RoleHandler.REQUIRED_SCOPES))
+        Scope[] scopes = new ArrayList<>(Arrays.asList(UserHandler.REQUIRED_SCOPES, RoleHandler.REQUIRED_SCOPES, ChannelHandler.REQUIRED_SCOPES))
                 .stream()
                 .flatMap(Stream::of)
                 .distinct()

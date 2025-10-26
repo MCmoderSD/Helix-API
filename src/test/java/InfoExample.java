@@ -10,16 +10,16 @@ public class InfoExample {
 
         // Init HelixHandler
         HelixHandler helixHandler = AuthExample.initHelix();
-        ChannelHandler channelHandler = helixHandler.getChannelHandler();
         UserHandler userHandler = helixHandler.getUserHandler();
+        ChannelHandler channelHandler = helixHandler.getChannelHandler();
 
         // Example Variables
         var exampleId = 164284617;              // User ID
-        var exampleUsername = "MCmoderSD";      // Username/Display Name
+        var exampleUsername = "MCmoderSD";      // Username
 
         // Get Channel Info
         ChannelInfo infoById = channelHandler.getChannelInfo(exampleId);                        // By ID
-        ChannelInfo infoByName = channelHandler.getChannelInfo(exampleUsername);                // By Username/Display Name
+        ChannelInfo infoByName = channelHandler.getChannelInfo(exampleUsername);                // By Username
         ChannelInfo info = channelHandler.getChannelInfo(userHandler.getTwitchUser(exampleId)); // By TwitchUser
 
         // Check both are the same
