@@ -23,6 +23,3 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
-### Test Files ###
-Users.tsv

@@ -37,6 +37,10 @@ public class UserHandler extends Handler {
 
     public HashSet<TwitchUser> getTwitchUsers(HashSet<Integer> ids) {
 
+        // Check Parameters
+        if (ids == null || ids.isEmpty()) throw new IllegalArgumentException("IDs cannot be null or empty");
+        for (var id : ids) if (id == null || id < 1) throw new IllegalArgumentException("Invalid ID in IDs: " + id);
+
         // Variables
         HashSet<User> users = getUsersByIDs(ids);
         HashSet<TwitchUser> twitchUsers = new HashSet<>();
@@ -49,6 +53,10 @@ public class UserHandler extends Handler {
     }
 
     public HashSet<TwitchUser> getTwitchUsersByName(HashSet<String> usernames) {
+
+        // Check Parameters
+        if (usernames == null || usernames.isEmpty()) throw new IllegalArgumentException("Usernames cannot be null or empty");
+        for (var username : usernames) if (username == null || username.isBlank() || username.contains(" ")) throw new IllegalArgumentException("Invalid username in usernames: " + username);
 
         // Variables
         HashSet<User> users = getUsersByName(usernames);

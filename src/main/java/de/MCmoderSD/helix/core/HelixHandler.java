@@ -9,9 +9,11 @@ import com.github.twitch4j.TwitchClientBuilder;
 import com.github.twitch4j.helix.TwitchHelix;
 
 import de.MCmoderSD.helix.enums.Scope;
-import de.MCmoderSD.helix.handler.ChannelHandler;
-import de.MCmoderSD.helix.handler.RoleHandler;
 import de.MCmoderSD.helix.handler.UserHandler;
+import de.MCmoderSD.helix.handler.ChatHandler;
+import de.MCmoderSD.helix.handler.RoleHandler;
+import de.MCmoderSD.helix.handler.StreamHandler;
+import de.MCmoderSD.helix.handler.ChannelHandler;
 import de.MCmoderSD.server.core.Server;
 
 import static de.MCmoderSD.helix.utilities.ConfigValidator.*;
@@ -28,7 +30,9 @@ public class HelixHandler {
     // Handler
     private final TokenHandler tokenHandler;
     private final UserHandler userHandler;
+    private final ChatHandler chatHandler;
     private final RoleHandler roleHandler;
+    private final StreamHandler streamHandler;
     private final ChannelHandler channelHandler;
 
     // Constructor
@@ -66,7 +70,9 @@ public class HelixHandler {
 
         // Initialize Handlers
         userHandler = new UserHandler(helix, tokenHandler);
+        chatHandler = new ChatHandler(helix, tokenHandler);
         roleHandler = new RoleHandler(helix, tokenHandler);
+        streamHandler = new StreamHandler(helix, tokenHandler);
         channelHandler = new ChannelHandler(helix, tokenHandler);
     }
 
@@ -90,7 +96,9 @@ public class HelixHandler {
 
         // Initialize Handlers
         userHandler = new UserHandler(helix, tokenHandler);
+        chatHandler = new ChatHandler(helix, tokenHandler);
         roleHandler = new RoleHandler(helix, tokenHandler);
+        streamHandler = new StreamHandler(helix, tokenHandler);
         channelHandler = new ChannelHandler(helix, tokenHandler);
     }
 
@@ -112,8 +120,16 @@ public class HelixHandler {
         return userHandler;
     }
 
+    public ChatHandler getChatHandler() {
+        return chatHandler;
+    }
+
     public RoleHandler getRoleHandler() {
         return roleHandler;
+    }
+
+    public StreamHandler getStreamHandler() {
+        return streamHandler;
     }
 
     public ChannelHandler getChannelHandler() {

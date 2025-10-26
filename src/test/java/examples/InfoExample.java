@@ -1,3 +1,5 @@
+package examples;
+
 import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.objects.ChannelInfo;
 import de.MCmoderSD.helix.handler.*;
