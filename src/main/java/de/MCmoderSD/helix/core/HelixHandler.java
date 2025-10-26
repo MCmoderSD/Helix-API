@@ -21,7 +21,7 @@ import static de.MCmoderSD.helix.utilities.ConfigValidator.*;
 public class HelixHandler {
 
     // Constants
-    private static final String PROVIDER = "twitch";
+    public static final String PROVIDER = "twitch";
 
     // Attributes
     private final TwitchHelix helix;
