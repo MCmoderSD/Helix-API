@@ -13,11 +13,11 @@ public class UserExample {
 
         // Example Variables
         var exampleId = 164284617;              // User ID
-        var exampleUsername = "MCmoderSD";      // Username/Display Name
+        var exampleUsername = "MCmoderSD";      // Username
 
         // Get TwitchUser
         TwitchUser user = userHandler.getTwitchUser(exampleId);                 // By ID
-        TwitchUser userByName = userHandler.getTwitchUser(exampleUsername);     // By Username/Display Name
+        TwitchUser userByName = userHandler.getTwitchUser(exampleUsername);     // By Username
 
         // Check both are the same
         System.out.println("Users are the same: " + user.equals(userByName));

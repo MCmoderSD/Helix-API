@@ -16,12 +16,12 @@ public class ShoutoutExample {
 
         // Init HelixHandler
         HelixHandler helixHandler = AuthExample.initHelix();
-        ChannelHandler channelHandler = helixHandler.getChannelHandler();
         UserHandler userHandler = helixHandler.getUserHandler();
+        ChannelHandler channelHandler = helixHandler.getChannelHandler();
 
         // Get Channels
         TwitchUser user = userHandler.getTwitchUser("MCmoderSD");       // Channel to send shoutout to      (target)
-        TwitchUser channel = userHandler.getTwitchUser("Modersesel");   // Channel to send shoutout from    (source)
+        TwitchUser channel = userHandler.getTwitchUser("ModersEsel");   // Channel to send shoutout from    (source)
 
         // Send Shoutout
         channelHandler.sendShoutout(user, channel);
