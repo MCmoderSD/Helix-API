@@ -3,7 +3,7 @@ package de.MCmoderSD.helix.utilities;
 import com.fasterxml.jackson.databind.JsonNode;
 
 
-@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+@SuppressWarnings({"BooleanMethodIsAlwaysInverted", "SameReturnValue"})
 public class ConfigValidator {
 
     public static boolean validateApplicationConfig(JsonNode application) throws IllegalArgumentException {

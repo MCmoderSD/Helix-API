@@ -109,9 +109,9 @@ The configuration consists of three main sections:
   - `clientSecret`: Your Twitch application's Client Secret.
 
 You can create a Twitch application and obtain the Client ID and Client Secret from the [Twitch Developer Console](https://dev.twitch.tv/console/apps).
-> Note: The database stores all data encrypted using the Client Secret as the encryption key.
-> Make sure to keep your Client Secret secure and do not share it publicly. <br>
-> 
+> Note: The database stores all data encrypted using the Client Secret as the encryption key. <br>
+> Make sure to keep your Client Secret secure and do not share it publicly.
+>
 > Also, changing the Client Secret will invalidate all existing tokens stored in the database.
 
 ### 2. Server
