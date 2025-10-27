@@ -1,18 +1,16 @@
 package de.MCmoderSD.helix.database;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import de.MCmoderSD.encryption.core.Encryption;
 import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.sql.Driver;
 
-import java.io.IOException;
+import tools.jackson.databind.JsonNode;
 
-import java.sql.PreparedStatement;
+import java.io.IOException;
+import java.util.HashSet;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import java.util.HashSet;
+import java.sql.PreparedStatement;
 
 import static de.MCmoderSD.sql.Driver.DatabaseType.MARIADB;
 import static de.MCmoderSD.encryption.core.Encryption.*;

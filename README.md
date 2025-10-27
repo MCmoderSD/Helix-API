@@ -143,7 +143,7 @@ Add the dependency to your `pom.xml` file:
 <dependency>
     <groupId>de.MCmoderSD</groupId>
     <artifactId>Helix-API</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.2</version>
 </dependency>
 ```
 
@@ -157,8 +157,6 @@ Alternatively, you can initialize the `HelixHandler` with provided `TwitchHelix`
 ```java
 package examples;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.handler.*;
@@ -166,10 +164,10 @@ import de.MCmoderSD.helix.handler.*;
 import de.MCmoderSD.json.JsonUtility;
 import de.MCmoderSD.server.core.Server;
 
+import tools.jackson.databind.JsonNode;
+
 import java.io.IOException;
-
 import java.net.URISyntaxException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;

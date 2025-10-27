@@ -1,12 +1,13 @@
 package de.MCmoderSD.helix.core;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.philippheuer.credentialmanager.CredentialManager;
 import com.github.philippheuer.credentialmanager.CredentialManagerBuilder;
 import com.github.philippheuer.credentialmanager.domain.OAuth2Credential;
 
 import com.github.twitch4j.TwitchClientBuilder;
 import com.github.twitch4j.helix.TwitchHelix;
+
+import tools.jackson.databind.JsonNode;
 
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.handler.UserHandler;
@@ -15,6 +16,7 @@ import de.MCmoderSD.helix.handler.RoleHandler;
 import de.MCmoderSD.helix.handler.StreamHandler;
 import de.MCmoderSD.helix.handler.ChannelHandler;
 import de.MCmoderSD.server.core.Server;
+
 
 import static de.MCmoderSD.helix.utilities.ConfigValidator.*;
 
@@ -47,8 +49,8 @@ public class HelixHandler {
 
         // Get Twitch Credentials
         JsonNode credentials = application.get("credentials");
-        String clientId = credentials.get("clientId").asText();
-        String clientSecret = credentials.get("clientSecret").asText();
+        String clientId = credentials.get("clientId").asString();
+        String clientSecret = credentials.get("clientSecret").asString();
 
         // Initialize Credential TokenHandler
         credentialManager = CredentialManagerBuilder.builder().build();

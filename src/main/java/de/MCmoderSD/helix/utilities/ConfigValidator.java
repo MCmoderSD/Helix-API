@@ -1,7 +1,6 @@
 package de.MCmoderSD.helix.utilities;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
+import tools.jackson.databind.JsonNode;
 
 @SuppressWarnings({"BooleanMethodIsAlwaysInverted", "SameReturnValue"})
 public class ConfigValidator {
@@ -10,24 +9,24 @@ public class ConfigValidator {
 
         // Check if application config is valid
         if (application.isNull() || application.isEmpty()) throw new IllegalArgumentException("Application config is null or empty");
-        if (!application.has("oAuthRedirectURL") || application.get("oAuthRedirectURL").isNull()) throw new IllegalArgumentException("Application config is missing 'oAuthRedirectURL'");
+        if (!application.has("oAuthRedirectURL") || application.get("oAuthRedirectURL").isNull() || !application.get("oAuthRedirectURL").isString()) throw new IllegalArgumentException("Application config is missing 'oAuthRedirectURL'");
         if (!application.has("credentials") || application.get("credentials").isNull() || application.get("credentials").isEmpty()) throw new IllegalArgumentException("Application config is missing 'credentials'");
 
         // Check Credentials
         JsonNode credentials = application.get("credentials");
-        if (!credentials.has("clientId") || credentials.get("clientId").isNull()) throw new IllegalArgumentException("Credentials config is missing 'clientId'");
-        if (!credentials.has("clientSecret") || credentials.get("clientSecret").isNull()) throw new IllegalArgumentException("Credentials config is missing 'clientSecret'");
+        if (!credentials.has("clientId") || credentials.get("clientId").isNull() || !credentials.get("clientId").isString()) throw new IllegalArgumentException("Credentials config is missing 'clientId'");
+        if (!credentials.has("clientSecret") || credentials.get("clientSecret").isNull() || !credentials.get("clientSecret").isString()) throw new IllegalArgumentException("Credentials config is missing 'clientSecret'");
 
         // Get Credentials
-        String clientId = credentials.get("clientId").asText();
-        String clientSecret = credentials.get("clientSecret").asText();
+        String clientId = credentials.get("clientId").asString();
+        String clientSecret = credentials.get("clientSecret").asString();
 
         // Check if clientId and clientSecret
         if (clientId == null || clientId.isBlank()) throw new IllegalArgumentException("Credentials config 'clientId' is empty");
         if (clientSecret == null || clientSecret.isBlank()) throw new IllegalArgumentException("Credentials config 'clientSecret' is empty");
 
         // Check oAuthRedirectURL
-        String oAuthRedirectURL = application.get("oAuthRedirectURL").asText();
+        String oAuthRedirectURL = application.get("oAuthRedirectURL").asString();
         if (oAuthRedirectURL == null || oAuthRedirectURL.isBlank()) throw new IllegalArgumentException("Application config 'oAuthRedirectURL' is empty");
         if (oAuthRedirectURL.endsWith("/")) throw new IllegalArgumentException("Application config 'oAuthRedirectURL' must not end with '/'");
         if (!oAuthRedirectURL.startsWith("http")) throw new IllegalArgumentException("Application config 'oAuthRedirectURL' is not a valid URL");
@@ -39,17 +38,17 @@ public class ConfigValidator {
 
         // Check if database config is valid
         if (database == null) throw new IllegalArgumentException("Database config is null");
-        if (!database.has("host") || database.get("host").isNull()) throw new IllegalArgumentException("Database config is missing 'host'");
-        if (!database.has("port") || database.get("port").isNull()) throw new IllegalArgumentException("Database config is missing 'port'");
-        if (!database.has("database") || database.get("database").isNull()) throw new IllegalArgumentException("Database config is missing 'database'");
-        if (!database.has("username") || database.get("username").isNull()) throw new IllegalArgumentException("Database config is missing 'username'");
-        if (!database.has("password") || database.get("password").isNull()) throw new IllegalArgumentException("Database config is missing 'password'");
+        if (!database.has("host") || database.get("host").isNull() || !database.get("host").isString()) throw new IllegalArgumentException("Database config is missing 'host'");
+        if (!database.has("port") || database.get("port").isNull() || !database.get("port").isInt()) throw new IllegalArgumentException("Database config is missing 'port'");
+        if (!database.has("database") || database.get("database").isNull() || !database.get("database").isString()) throw new IllegalArgumentException("Database config is missing 'database'");
+        if (!database.has("username") || database.get("username").isNull() || !database.get("username").isString()) throw new IllegalArgumentException("Database config is missing 'username'");
+        if (!database.has("password") || database.get("password").isNull() || !database.get("password").isString()) throw new IllegalArgumentException("Database config is missing 'password'");
 
         // Get Database Config
-        String host = database.get("host").asText();
-        String dbName = database.get("database").asText();
-        String user = database.get("username").asText();
-        String password = database.get("password").asText();
+        String host = database.get("host").asString();
+        String dbName = database.get("database").asString();
+        String user = database.get("username").asString();
+        String password = database.get("password").asString();
 
         // Check if host, database, username and password are valid
         if (host == null || host.isBlank()) throw new IllegalArgumentException("Database config 'host' is empty");

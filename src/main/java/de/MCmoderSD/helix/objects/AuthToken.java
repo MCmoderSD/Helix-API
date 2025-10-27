@@ -1,17 +1,15 @@
 package de.MCmoderSD.helix.objects;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.github.twitch4j.helix.TwitchHelix;
-
 import de.MCmoderSD.helix.core.TokenHandler;
 import de.MCmoderSD.helix.enums.Scope;
 
+import com.github.twitch4j.helix.TwitchHelix;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -37,42 +35,36 @@ public class AuthToken implements Serializable {
         // Validate input
         if (responseBody == null || responseBody.isBlank()) throw new IllegalArgumentException("Response body cannot be null or empty");
 
-        try {
+        // Parse JSON
+        JsonNode response = new ObjectMapper().readTree(responseBody);
 
-            // Parse JSON
-            JsonNode response = new ObjectMapper().readTree(responseBody);
+        // Validate JSON
+        if (!response.has("access_token") || response.get("access_token").isNull() || !response.get("access_token").isString()) throw new IllegalArgumentException("Response body does not contain access_token");
+        if (!response.has("refresh_token") || response.get("refresh_token").isNull() || !response.get("refresh_token").isString()) throw new IllegalArgumentException("Response body does not contain refresh_token");
+        if (!response.has("expires_in") || response.get("expires_in").isNull() || !response.get("expires_in").isNumber()) throw new IllegalArgumentException("Response body does not contain expires_in");
 
-            // Validate JSON
-            if (!response.has("access_token") || response.get("access_token").isNull()) throw new IllegalArgumentException("Response body does not contain access_token");
-            if (!response.has("refresh_token") || response.get("refresh_token").isNull()) throw new IllegalArgumentException("Response body does not contain refresh_token");
-            if (!response.has("expires_in") || response.get("expires_in").isNull()) throw new IllegalArgumentException("Response body does not contain expires_in");
+        // Extract data
+        accessToken = response.get("access_token").asString();
+        refreshToken = response.get("refresh_token").asString();
+        expiresIn = response.get("expires_in").asInt();
 
-            // Extract data
-            accessToken = response.get("access_token").asText();
-            refreshToken = response.get("refresh_token").asText();
-            expiresIn = response.get("expires_in").asInt();
+        // Validate data
+        if (accessToken.isBlank()) throw new IllegalArgumentException("Access token cannot be empty");
+        if (refreshToken.isBlank()) throw new IllegalArgumentException("Refresh token cannot be empty");
+        if (expiresIn < 1) throw new IllegalArgumentException("Expires in must be greater than 0");
 
-            // Validate data
-            if (accessToken.isBlank()) throw new IllegalArgumentException("Access token cannot be empty");
-            if (refreshToken.isBlank()) throw new IllegalArgumentException("Refresh token cannot be empty");
-            if (expiresIn < 1) throw new IllegalArgumentException("Expires in must be greater than 0");
-
-            // Parse scopes
-            scopes = new HashSet<>();
-            if (response.has("scope") && !response.get("scope").isNull() && response.get("scope").isArray() && !response.get("scope").isEmpty()) {
-                var scopeArray = response.get("scope");
-                for (var scope : scopeArray) scopes.add(Scope.getScope(scope.asText()));
-            }
-
-            // Get user ID
-            id = Integer.parseInt(helix.getUsers(accessToken, null, null).execute().getUsers().getFirst().getId());
-
-            // Calculate next refresh time
-            nextRefresh = new Timestamp(timestamp.getTime() + (expiresIn * 1000L));
-
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse AuthToken JSON response: " + e.getMessage(), e);
+        // Parse scopes
+        scopes = new HashSet<>();
+        if (response.has("scope") && !response.get("scope").isNull() && response.get("scope").isArray() && !response.get("scope").isEmpty()) {
+            var scopeArray = response.get("scope");
+            for (var scope : scopeArray) scopes.add(Scope.getScope(scope.asString()));
         }
+
+        // Get user ID
+        id = Integer.parseInt(helix.getUsers(accessToken, null, null).execute().getUsers().getFirst().getId());
+
+        // Calculate next refresh time
+        nextRefresh = new Timestamp(timestamp.getTime() + (expiresIn * 1000L));
 
         // Set next refresh
         new Thread(() -> {

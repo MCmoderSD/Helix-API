@@ -1,6 +1,5 @@
 package benchmarks;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.enums.Scope;
 import de.MCmoderSD.helix.objects.TwitchUser;
@@ -8,6 +7,8 @@ import de.MCmoderSD.helix.handler.UserHandler;
 import de.MCmoderSD.helix.handler.RoleHandler;
 import de.MCmoderSD.json.JsonUtility;
 import de.MCmoderSD.server.core.Server;
+
+import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -21,7 +22,7 @@ public class CacheBenchmark {
 
     public static void main(String[] args) {
 
-        // Declare benchmark.Benchmark Variables
+        // Declare Benchmark Variables
         long configStartTime, configEndTime;        // Configuration Load Time
         long serverStartTime, serverEndTime;        // Server Initialization Time
         long helixInitStartTime, helixInitEndTime;  // HelixHandler Initialization Time
@@ -76,7 +77,7 @@ public class CacheBenchmark {
         // Get Example User
         TwitchUser channel = userHandler.getTwitchUser("r4kunnn");
 
-        // Declare benchmark.Benchmark Variables
+        // Declare Benchmark Variables
         var rounds = 10; // Number of rounds to average
         long[] moderatorNonCacheStartTime, moderatorNonCacheEndTime;      // Moderator Non-Cache Time
         long[] moderatorCacheStartTime, moderatorCacheEndTime;            // Moderator Cache Time
@@ -106,53 +107,53 @@ public class CacheBenchmark {
         followerCacheEndTime = new long[rounds + 1];
 
         // Run Benchmarks
-        System.out.println("\nStarting benchmark.Benchmark for Role Retrievals over " + rounds + " rounds...\n");
+        System.out.println("\nStarting Benchmark for Role Retrievals over " + rounds + " rounds...\n");
         for (var i = 0; i < rounds + 1; i++) {
             var start = System.nanoTime();
 
             // Clear all caches before each round
             roleHandler.clearCaches();
 
-            // benchmark.Benchmark Moderator Retrieval - Non-Cached
+            // Benchmark Moderator Retrieval - Non-Cached
             roleHandler.clearModeratorCache();
             moderatorNonCacheStartTime[i] = System.nanoTime();
             roleHandler.getModerators(channel);
             moderatorNonCacheEndTime[i] = System.nanoTime();
 
-            // benchmark.Benchmark VIP Retrieval - Non-Cached
+            // Benchmark VIP Retrieval - Non-Cached
             roleHandler.clearVIPCache();
             vipNonCacheStartTime[i] = System.nanoTime();
             roleHandler.getVIPs(channel);
             vipNonCacheEndTime[i] = System.nanoTime();
 
-            // benchmark.Benchmark Subscriber Retrieval - Non-Cached
+            // Benchmark Subscriber Retrieval - Non-Cached
             roleHandler.clearSubscriberCache();
             subscriberNonCacheStartTime[i] = System.nanoTime();
             roleHandler.getSubscribers(channel);
             subscriberNonCacheEndTime[i] = System.nanoTime();
 
-            // benchmark.Benchmark Follower Retrieval - Non-Cached
+            // Benchmark Follower Retrieval - Non-Cached
             roleHandler.clearFollowerCache();
             followerNonCacheStartTime[i] = System.nanoTime();
             roleHandler.getFollowers(channel);
             followerNonCacheEndTime[i] = System.nanoTime();
 
-            // benchmark.Benchmark Moderator Retrieval - Cached
+            // Benchmark Moderator Retrieval - Cached
             moderatorCacheStartTime[i] = System.nanoTime();
             roleHandler.getModerators(channel);
             moderatorCacheEndTime[i] = System.nanoTime();
 
-            // benchmark.Benchmark VIP Retrieval - Cached
+            // Benchmark VIP Retrieval - Cached
             vipCacheStartTime[i] = System.nanoTime();
             roleHandler.getVIPs(channel);
             vipCacheEndTime[i] = System.nanoTime();
 
-            // benchmark.Benchmark Subscriber Retrieval - Cached
+            // Benchmark Subscriber Retrieval - Cached
             subscriberCacheStartTime[i] = System.nanoTime();
             roleHandler.getSubscribers(channel);
             subscriberCacheEndTime[i] = System.nanoTime();
 
-            // benchmark.Benchmark Follower Retrieval - Cached
+            // Benchmark Follower Retrieval - Cached
             followerCacheStartTime[i] = System.nanoTime();
             roleHandler.getFollowers(channel);
             followerCacheEndTime[i] = System.nanoTime();
@@ -201,7 +202,7 @@ public class CacheBenchmark {
         followerCacheTime /= rounds;
 
         // Print Results
-        System.out.println("\nbenchmark.Benchmark Results for Channel: " + channel.getDisplayName() + " (ID: " + channel.getId() + ")\n");
+        System.out.println("\nBenchmark Results for Channel: " + channel.getDisplayName() + " (ID: " + channel.getId() + ")\n");
 
         // Moderators
         System.out.println("Moderators: " + modSize);

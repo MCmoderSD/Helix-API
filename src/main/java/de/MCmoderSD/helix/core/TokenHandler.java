@@ -1,6 +1,6 @@
 package de.MCmoderSD.helix.core;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import de.MCmoderSD.encryption.core.Encryption;
 import de.MCmoderSD.helix.database.SQL;
@@ -63,9 +63,9 @@ public class TokenHandler {
 
         // Load Application Config
         JsonNode credentials = application.get("credentials");
-        clientId = credentials.get("clientId").asText();
-        clientSecret = credentials.get("clientSecret").asText();
-        redirectURL = application.get("oAuthRedirectURL").asText();
+        clientId = credentials.get("clientId").asString();
+        clientSecret = credentials.get("clientSecret").asString();
+        redirectURL = application.get("oAuthRedirectURL").asString();
 
         // Initialize SQL
         sql = new SQL(database, new Encryption(clientSecret, SHA3_256, AES_ECB_PKCS5));
