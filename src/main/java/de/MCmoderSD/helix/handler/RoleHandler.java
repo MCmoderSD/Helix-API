@@ -121,7 +121,18 @@ public class RoleHandler extends Handler {
         for (var moderator : moderators) moderatorIds.add(Integer.parseInt(moderator.getUserId()));
         HashMap<Integer, User> userMap = getUsersByIDsMap(moderatorIds);
         HashSet<ChannelModerator> fetchedModerators = new HashSet<>();
-        for (var moderator : moderators) fetchedModerators.add(new ChannelModerator(userMap.get(Integer.parseInt(moderator.getUserId())), channel));
+        for (var moderator : moderators) {
+
+            // Get User
+            var user = userMap.get(Integer.parseInt(moderator.getUserId()));
+            if (user == null) continue; // User not found, skip
+
+            // Add Moderator
+            fetchedModerators.add(new ChannelModerator(
+                    userMap.get(Integer.parseInt(moderator.getUserId())),   // Moderator
+                    channel                                                 // Channel
+            ));
+        }
 
         // Check if there are more moderators
         HelixPagination pagination = moderatorList.getPagination();
@@ -194,12 +205,20 @@ public class RoleHandler extends Handler {
         // Convert to ChannelEditor HashSet
         HashSet<Integer> editorIds = new HashSet<>();
         for (var editor : editors) editorIds.add(Integer.parseInt(editor.getUserId()));
-        HashMap<Integer, User> users = getUsersByIDsMap(editorIds);
+        HashMap<Integer, User> userMap = getUsersByIDsMap(editorIds);
         HashSet<ChannelEditor> channelEditors = new HashSet<>();
-        for (var editor : editors) channelEditors.add(new ChannelEditor(
-                users.get(Integer.parseInt(editor.getUserId())),    // Editor
-                channel                                             // Channel
-        ));
+        for (var editor : editors) {
+
+            // Get User
+            var user = userMap.get(Integer.parseInt(editor.getUserId()));
+            if (user == null) continue; // User not found, skip
+
+            // Add Editor
+            channelEditors.add(new ChannelEditor(
+                    userMap.get(Integer.parseInt(editor.getUserId())),  // Editor
+                    channel                                             // Channel
+            ));
+        }
 
         // Return editors
         return channelEditors;
@@ -250,10 +269,18 @@ public class RoleHandler extends Handler {
         for (var vip : vips) vipIds.add(Integer.parseInt(vip.getUserId()));
         HashMap<Integer, User> userMap = getUsersByIDsMap(vipIds);
         HashSet<ChannelVip> fetchedVips = new HashSet<>();
-        for (var vip : vips) fetchedVips.add(new ChannelVip(
-                userMap.get(Integer.parseInt(vip.getUserId())),     // VIP
-                channel                                             // Channel
-        ));
+        for (var vip : vips) {
+
+            // Get User
+            var user = userMap.get(Integer.parseInt(vip.getUserId()));
+            if (user == null) continue; // User not found, skip
+
+            // Add VIP
+            fetchedVips.add(new ChannelVip(
+                    userMap.get(Integer.parseInt(vip.getUserId())), // VIP
+                    channel                                         // Channel
+            ));
+        }
 
         // Check if there are more VIPs
         HelixPagination pagination = vipList.getPagination();
@@ -337,12 +364,20 @@ public class RoleHandler extends Handler {
         }
         HashMap<Integer, User> userMap = getUsersByIDsMap(subscriberIds);
         HashSet<ChannelSubscriber> fetchedChannelSubscribers = new HashSet<>();
-        for (var subscription : subscriptions) fetchedChannelSubscribers.add(new ChannelSubscriber(
-                subscription,                                                                                   // Subscription
-                userMap.get(Integer.parseInt(subscription.getUserId())),                                        // Subscriber
-                channel,                                                                                        // Channel
-                subscription.getIsGift() ? userMap.get(Integer.parseInt(subscription.getGifterId())) : null     // Gifter (if gifted)
-        ));
+        for (var subscription : subscriptions) {
+
+            // Get User
+            var user = userMap.get(Integer.parseInt(subscription.getUserId()));
+            if (user == null) continue; // User not found, skip
+
+            // Add Subscriber
+            fetchedChannelSubscribers.add(new ChannelSubscriber(
+                    subscription,                                                                                   // Subscription
+                    userMap.get(Integer.parseInt(subscription.getUserId())),                                        // Subscriber
+                    channel,                                                                                        // Channel
+                    subscription.getIsGift() ? userMap.get(Integer.parseInt(subscription.getGifterId())) : null     // Gifter (if gifted)
+            ));
+        }
 
         // Check if there are more Subscribers
         HelixPagination pagination = subscriptionList.getPagination();
@@ -423,11 +458,19 @@ public class RoleHandler extends Handler {
         for (var follow : follows) followerIds.add(Integer.parseInt(follow.getUserId()));
         HashMap<Integer, User> userMap = getUsersByIDsMap(followerIds);
         HashSet<ChannelFollower> fetchedFollowers = new HashSet<>();
-        for (var follow : follows) fetchedFollowers.add(new ChannelFollower(
-                follow,                                             // Follow
-                userMap.get(Integer.parseInt(follow.getUserId())),  // Follower
-                channel                                             // Channel
-        ));
+        for (var follow : follows) {
+
+            // Get User
+            var user = userMap.get(Integer.parseInt(follow.getUserId()));
+            if (user == null) continue; // User not found, skip
+
+            // Add Follower
+            fetchedFollowers.add(new ChannelFollower(
+                    follow,                                             // Follow
+                    userMap.get(Integer.parseInt(follow.getUserId())),  // Follower
+                    channel                                             // Channel
+            ));
+        }
 
         // Check if there are more Followers
         HelixPagination pagination = inboundFollowers.getPagination();

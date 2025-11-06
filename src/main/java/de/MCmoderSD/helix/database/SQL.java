@@ -37,9 +37,11 @@ public class SQL extends Driver {
             connection.prepareStatement("CREATE TABLE IF NOT EXISTS " +
                 """
                 AuthTokens (
-                    id INT PRIMARY KEY,
-                    token BLOB NOT NULL
-                );
+                    id      INT     PRIMARY KEY,                    # User ID
+                    token   BLOB    UNIQUE          NOT NULL        # Encrypted AuthToken (serialized --> encrypted --> compressed)
+                )
+                    ROW_FORMAT = COMPRESSED                         # Compressed Row Format
+                    KEY_BLOCK_SIZE = 1                              # Key Block Size
                 """
             ).execute();
 
