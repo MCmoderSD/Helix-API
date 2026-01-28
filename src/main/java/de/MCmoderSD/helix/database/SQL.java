@@ -24,8 +24,11 @@ public class SQL extends Driver {
     // Constructor
     public SQL(Builder builder, Encryption encryption) {
 
-        // Init & Connect
+        // Call Super
         super(builder);
+
+        // Configure Database
+        setAutoReconnect(true);
         connect();
 
         // Set Associations
