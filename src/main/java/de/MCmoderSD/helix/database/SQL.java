@@ -4,15 +4,14 @@ import de.MCmoderSD.encryption.core.Encryption;
 import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.sql.Driver;
 
-import tools.jackson.databind.JsonNode;
-
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 
-import static de.MCmoderSD.sql.Driver.DatabaseType.MARIADB;
 import static de.MCmoderSD.encryption.core.Encryption.*;
 import static de.MCmoderSD.tools.GZIP.*;
 
@@ -23,29 +22,27 @@ public class SQL extends Driver {
     private final Encryption encryption;
 
     // Constructor
-    public SQL(JsonNode config, Encryption encryption) {
+    public SQL(Builder builder, Encryption encryption) {
 
-        // Call super constructor
-        super(MARIADB, config);
+        // Init & Connect
+        super(builder);
+        connect();
 
         // Set Associations
         this.encryption = encryption;
 
-        try {
+        // Initialize Database Tables
+        try (var bis = new BufferedInputStream(Objects.requireNonNull(SQL.class.getClassLoader().getResourceAsStream("database/AuthToken.sql")))) {
 
-            // Initialize tables
-            connection.prepareStatement("CREATE TABLE IF NOT EXISTS " +
-                """
-                AuthTokens (
-                    id      INT     PRIMARY KEY,                    # User ID
-                    token   BLOB    UNIQUE          NOT NULL        # Encrypted AuthToken (serialized --> encrypted --> compressed)
-                )
-                    ROW_FORMAT = COMPRESSED                         # Compressed Row Format
-                    KEY_BLOCK_SIZE = 1                              # Key Block Size
-                """
-            ).execute();
+            // Read SQL file
+            String table = new String(bis.readAllBytes());
 
-        } catch (SQLException e) {
+            // Execute SQL statement
+            PreparedStatement preparedStatement = connection.prepareStatement(table);
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+
+        } catch (IOException | SQLException e) {
             throw new RuntimeException("Failed to initialize database tables: " + e.getMessage(), e);
         }
     }
@@ -80,7 +77,7 @@ public class SQL extends Driver {
 
             // SQL statement to select the token
             PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT token FROM AuthTokens WHERE id = ?"
+                    "SELECT token FROM AuthToken WHERE id = ?"
             );
 
             // Set the parameters
@@ -108,7 +105,7 @@ public class SQL extends Driver {
 
             // SQL statement to select all tokens
             PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT token FROM AuthTokens"
+                    "SELECT token FROM AuthToken"
             );
 
             // Execute the query
@@ -142,7 +139,7 @@ public class SQL extends Driver {
 
             // SQL statement to insert or update the token
             PreparedStatement preparedStatement = connection.prepareStatement(
-                    "INSERT INTO AuthTokens (id, token) VALUES (?, ?) ON DUPLICATE KEY UPDATE token = ?"
+                    "INSERT INTO AuthToken (id, token) VALUES (?, ?) ON DUPLICATE KEY UPDATE token = ?"
             );
 
             // Set the parameters
@@ -169,7 +166,7 @@ public class SQL extends Driver {
 
             // SQL statement to delete the token
             PreparedStatement preparedStatement = connection.prepareStatement(
-                    "DELETE FROM AuthTokens WHERE id = ?"
+                    "DELETE FROM AuthToken WHERE id = ?"
             );
 
             // Set the parameters

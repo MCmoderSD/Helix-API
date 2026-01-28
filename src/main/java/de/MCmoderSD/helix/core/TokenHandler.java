@@ -1,5 +1,6 @@
 package de.MCmoderSD.helix.core;
 
+import de.MCmoderSD.sql.Driver;
 import tools.jackson.databind.JsonNode;
 
 import de.MCmoderSD.encryption.core.Encryption;
@@ -67,8 +68,17 @@ public class TokenHandler {
         clientSecret = credentials.get("clientSecret").asString();
         redirectURL = application.get("oAuthRedirectURL").asString();
 
+        // Initialize SQL Builder
+        SQL.Builder sqlBuilder = Driver.Builder
+                .withType(Driver.DatabaseType.MARIADB)
+                .withHost(database.get("host").asString())
+                .withPort(database.get("port").asInt())
+                .withDatabase(database.get("database").asString())
+                .withUsername(database.get("username").asString())
+                .withPassword(database.get("password").asString());
+
         // Initialize SQL
-        sql = new SQL(database, new Encryption(clientSecret, SHA3_256, AES_ECB_PKCS5));
+        sql = new SQL(sqlBuilder, new Encryption(clientSecret, SHA3_256, AES_ECB_PKCS5));
 
         // Initialize Request Builder
         requestBuilder = HttpRequest.newBuilder()

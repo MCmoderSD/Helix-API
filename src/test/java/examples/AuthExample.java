@@ -41,7 +41,7 @@ public class AuthExample {
         return new HelixHandler(applicationConfig, databaseConfig, server);
     }
 
-    public static void main(String[] args) {
+    void main() {
 
         // Init HelixHandler
         HelixHandler helixHandler = initHelix();
@@ -55,6 +55,6 @@ public class AuthExample {
 
         // Get Authorization URL
         String authURL = helixHandler.getAuthorizationUrl(scopes);
-        System.out.println("Authorization URL: " + authURL);
+        IO.println("Authorization URL: " + authURL);
     }
 }
