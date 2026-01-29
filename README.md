@@ -143,7 +143,7 @@ Add the dependency to your `pom.xml` file:
 <dependency>
     <groupId>de.MCmoderSD</groupId>
     <artifactId>Helix-API</artifactId>
-    <version>2.1.1</version>
+    <version>2.1.2</version>
 </dependency>
 ```
 
