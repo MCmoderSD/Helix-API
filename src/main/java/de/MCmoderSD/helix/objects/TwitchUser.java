@@ -135,18 +135,13 @@ public class TwitchUser implements Serializable {
         }
     }
 
-    // Methods
-    public boolean equals(TwitchUser user) {
-        if (user == null) return false;
-        boolean isEqual = id.equals(user.id);
-        isEqual &= username.equals(user.username);
-        isEqual &= createdAt.equals(user.createdAt);
-        isEqual &= Objects.equals(displayName, user.displayName);
-        isEqual &= Objects.equals(description, user.description);
-        isEqual &= Objects.equals(profileImageUrl, user.profileImageUrl);
-        isEqual &= Objects.equals(offlineImageUrl, user.offlineImageUrl);
-        isEqual &= broadcasterType == user.broadcasterType;
-        isEqual &= type == user.type;
-        return isEqual;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, username, createdAt, displayName, description, profileImageUrl, offlineImageUrl, broadcasterType, type);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj.getClass() == getClass() && hashCode() == obj.hashCode();
     }
 }
