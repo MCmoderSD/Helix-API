@@ -6,7 +6,7 @@
 
     <groupId>de.MCmoderSD</groupId>
     <artifactId>Helix-API</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 
     <name>Helix-API</name>
     <description>A Java Helix-API wrapper for communicating with the Twitch Helix API</description>
@@ -46,14 +46,14 @@
         <dependency>
             <groupId>de.MCmoderSD</groupId>
             <artifactId>HTTPS-Server</artifactId>
-            <version>3.1.0</version>
+            <version>3.1.1</version>
         </dependency>
 
         <!-- Json -->
         <dependency>
             <groupId>de.MCmoderSD</groupId>
             <artifactId>JsonUtility</artifactId>
-            <version>1.4.3</version>
+            <version>1.5.1</version>
         </dependency>
 
         <!-- JSQL Driver -->

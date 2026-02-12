@@ -8,9 +8,6 @@ import de.MCmoderSD.server.core.Server;
 
 import tools.jackson.databind.JsonNode;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import static de.MCmoderSD.helix.enums.Scope.MODERATION_READ;
 import static de.MCmoderSD.helix.enums.Scope.CHANNEL_READ_VIPS;
 import static de.MCmoderSD.helix.enums.Scope.CHANNEL_READ_SUBSCRIPTIONS;
@@ -25,12 +22,7 @@ void main() {
 
     // Load Config
     configStartTime = System.nanoTime();
-    JsonNode config;
-    try {
-        config = JsonUtility.getInstance().load("/config.json");
-    } catch (IOException | URISyntaxException e) {
-        throw new RuntimeException("Could not read config.json", e);
-    }
+    JsonNode config = JsonUtility.getInstance().loadResource("/config.json");
 
     // Load Config
     JsonNode applicationConfig = config.get("twitch").get("application");

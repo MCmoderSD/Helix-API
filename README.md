@@ -143,7 +143,7 @@ Add the dependency to your `pom.xml` file:
 <dependency>
     <groupId>de.MCmoderSD</groupId>
     <artifactId>Helix-API</artifactId>
-    <version>2.2.0</version>
+    <version>2.2.1</version>
 </dependency>
 ```
 
@@ -166,8 +166,6 @@ import de.MCmoderSD.server.core.Server;
 
 import tools.jackson.databind.JsonNode;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -178,12 +176,7 @@ public class AuthExample {
   public static HelixHandler initHelix() {
 
     // Load Config
-    JsonNode config;
-    try {
-      config = JsonUtility.getInstance().load("/config.json");
-    } catch (IOException | URISyntaxException e) {
-      throw new RuntimeException("Could not read config.json", e);
-    }
+    JsonNode config = JsonUtility.getInstance().loadResource("/config.json");
 
     // Load Config
     JsonNode applicationConfig = config.get("twitch").get("application");
