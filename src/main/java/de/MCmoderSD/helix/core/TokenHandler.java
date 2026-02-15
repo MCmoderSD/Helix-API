@@ -69,7 +69,7 @@ public class TokenHandler {
         redirectURL = application.get("oAuthRedirectURL").asString();
 
         // Initialize SQL Builder
-        SQL.Builder sqlBuilder = SQL.Builder
+        var sqlBuilder = SQL.builder()
                 .withType(Driver.DatabaseType.MARIADB)
                 .withHost(database.get("host").asString())
                 .withPort(database.get("port").asInt())
