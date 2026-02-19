@@ -87,8 +87,8 @@ public class TokenHandler {
 
         // Load Tokens
         authTokens = new ConcurrentHashMap<>();
-        var tokens = sql.getAuthTokens();
-        for (var token : tokens) refreshToken(token);
+        var tokens = sql.getRefreshTokens();
+        for (var entry : tokens.entrySet()) new AuthToken(entry.getKey(), entry.getValue(), this);
 
         // Register Callback Handler
         server.registerExactPath(redirectURL.substring(redirectURL.lastIndexOf('/')), new CallbackHandler());
@@ -140,11 +140,11 @@ public class TokenHandler {
             AuthToken refreshedToken = requestToken(requestBody);           // Request new token
             authTokens.put(refreshedToken.getId(), refreshedToken);         // Update in Memory
             helixHandler.addCredential(refreshedToken.getAccessToken());    // Update in Helix
-            sql.addAuthToken(refreshedToken);                               // Update or add token in database
+            sql.addRefreshToken(refreshedToken);                            // Update or add token in database
             return refreshedToken;                                          // Return refreshed token
 
         } catch (Exception e) {
-            sql.deleteAuthToken(token.getId());
+            sql.deleteRefreshToken(token.getId());
             throw new RuntimeException("Failed to refresh token: " + e.getMessage(), e);
         }
     }
@@ -207,7 +207,7 @@ public class TokenHandler {
                     AuthToken token = requestToken(requestBody);            // Request new token
                     authTokens.put(token.getId(), token);                   // Add to Memory
                     helixHandler.addCredential(token.getAccessToken());     // Add to Helix
-                    sql.addAuthToken(token);                                // Add to database
+                    sql.addRefreshToken(token);                             // Add to database
 
                 } catch (Exception e) {
                     System.err.println("Failed to handle callback: " + e.getMessage());

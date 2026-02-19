@@ -56,16 +56,13 @@ public class ChannelInfo extends TwitchUser implements Serializable {
         return brandedContent;
     }
 
-    // Methods
-    public boolean equals(ChannelInfo info) {
-        if (info == null) return false;
-        boolean isEqual = super.equals(info);
-        isEqual &= Objects.equals(title, info.title);
-        isEqual &= tags.containsAll(info.tags) && info.tags.containsAll(tags);
-        isEqual &= Objects.equals(language, info.language);
-        isEqual &= Objects.equals(gameId, info.gameId);
-        isEqual &= Objects.equals(gameName, info.gameName);
-        isEqual &= brandedContent == info.brandedContent;
-        return isEqual;
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), title, tags, language, gameId, gameName, brandedContent);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj.getClass() == getClass() && hashCode() == obj.hashCode();
     }
 }

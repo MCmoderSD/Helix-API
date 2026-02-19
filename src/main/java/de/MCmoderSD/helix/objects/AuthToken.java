@@ -83,6 +83,7 @@ public class AuthToken implements Serializable {
         }).start();
     }
 
+    // Secondary constructor for refreshing token
     public AuthToken(Integer id, String refreshToken, TokenHandler tokenHandler) {
 
         // Validate input
@@ -136,16 +137,13 @@ public class AuthToken implements Serializable {
         return nextRefresh;
     }
 
-    // Methods
-    public boolean equals(AuthToken token) {
-        if (token == null) return false;
-        boolean isEqual = id.equals(token.id);
-        isEqual &= Objects.equals(accessToken, token.accessToken);
-        isEqual &= Objects.equals(refreshToken, token.refreshToken);
-        isEqual &= Objects.equals(expiresIn, token.expiresIn);
-        isEqual &= Objects.equals(timestamp, token.timestamp);
-        isEqual &= Objects.equals(nextRefresh, token.nextRefresh);
-        isEqual &= scopes.containsAll(token.scopes) && token.scopes.containsAll(scopes);
-        return isEqual;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, accessToken, refreshToken, scopes, expiresIn, timestamp, nextRefresh);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj.getClass() == getClass() && hashCode() == obj.hashCode();
     }
 }

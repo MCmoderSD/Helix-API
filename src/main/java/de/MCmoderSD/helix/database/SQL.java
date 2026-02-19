@@ -6,14 +6,11 @@ import de.MCmoderSD.sql.Driver;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Objects;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
-
-import static de.MCmoderSD.encryption.core.Encryption.*;
-import static de.MCmoderSD.tools.GZIP.*;
 
 @SuppressWarnings("unused")
 public class SQL extends Driver {
@@ -35,7 +32,7 @@ public class SQL extends Driver {
         this.encryption = encryption;
 
         // Initialize Database Tables
-        try (var bis = new BufferedInputStream(Objects.requireNonNull(SQL.class.getClassLoader().getResourceAsStream("database/AuthToken.sql")))) {
+        try (var bis = new BufferedInputStream(Objects.requireNonNull(SQL.class.getClassLoader().getResourceAsStream("database/RefreshToken.sql")))) {
 
             // Read SQL file
             String table = new String(bis.readAllBytes());
@@ -50,126 +47,45 @@ public class SQL extends Driver {
         }
     }
 
-    private static AuthToken decrypt(byte[] data, Encryption encryption) {
-        try {
-            byte[] encryptedBytes = inflate(data);
-            byte[] decryptedBytes = encryption.decrypt(encryptedBytes);
-            return (AuthToken) deserialize(decryptedBytes);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to inflate and decrypt AuthToken: " + e.getMessage(), e);
-        }
-    }
-
-    private static byte[] encrypt(AuthToken token, Encryption encryption) {
-        try {
-            byte[] serializedBytes = serialize(token);
-            byte[] encryptedBytes = encryption.encrypt(serializedBytes);
-            return deflate(encryptedBytes);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to serialize, encrypt, and deflate AuthToken: " + e.getMessage(), e);
-        }
-    }
-
-    public AuthToken getAuthToken(Integer id) {
-
-        // Check id
-        if (id == null) throw new IllegalArgumentException("AuthToken id cannot be null");
-        if (id < 1) throw new IllegalArgumentException("AuthToken id must be greater than 0");
-
+    // Add or update a refresh token
+    public void addRefreshToken(AuthToken authToken) {
         try {
 
-            // SQL statement to select the token
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT token FROM AuthToken WHERE id = ?"
-            );
-
-            // Set the parameters
-            preparedStatement.setInt(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            // Process the result set
-            AuthToken authToken = null;
-            if (resultSet.next()) authToken = decrypt(resultSet.getBytes("token"), encryption);
-
-            // Close the result set and statement
-            resultSet.close();
-            preparedStatement.close();
-
-            // Return the auth token
-            return authToken;
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to retrieve AuthToken with id " + id + ": " + e.getMessage(), e);
-        }
-    }
-
-    public HashSet<AuthToken> getAuthTokens() {
-        try {
-
-            // SQL statement to select all tokens
-            PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT token FROM AuthToken"
-            );
-
-            // Execute the query
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            // Process the result set
-            HashSet<AuthToken> authTokens = new HashSet<>();
-            while (resultSet.next()) authTokens.add(decrypt(resultSet.getBytes("token"), encryption));
-
-            // Close the result set and statement
-            resultSet.close();
-            preparedStatement.close();
-
-            // Return the auth tokens
-            return authTokens;
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to retrieve AuthTokens: " + e.getMessage(), e);
-        }
-    }
-
-    public void addAuthToken(AuthToken authToken) {
-
-        // Check authToken
-        if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
-
-        try {
+            // Check authToken
+            if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
 
             // Variables
-            byte[] data = encrypt(authToken, encryption);
+            String token = encryption.encrypt(authToken.getRefreshToken());
 
             // SQL statement to insert or update the token
             PreparedStatement preparedStatement = connection.prepareStatement(
-                    "INSERT INTO AuthToken (id, token) VALUES (?, ?) ON DUPLICATE KEY UPDATE token = ?"
+                    "INSERT INTO RefreshToken (id, token) VALUES (?, ?) ON DUPLICATE KEY UPDATE token = ?"
             );
 
             // Set the parameters
             preparedStatement.setInt(1, authToken.getId()); // insert id
-            preparedStatement.setBytes(2, data); // insert token
-            preparedStatement.setBytes(3, data); // update token
+            preparedStatement.setString(2, token);          // insert token
+            preparedStatement.setString(3, token);          // update token
             preparedStatement.executeUpdate(); // execute
 
             // Close the statement
             preparedStatement.close();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to add or update AuthToken with id " + authToken.getId() + ": " + e.getMessage(), e);
+            throw new RuntimeException("Failed to add or update RefreshToken with id " + authToken.getId() + ": " + e.getMessage(), e);
         }
     }
 
-    public void deleteAuthToken(Integer id) {
-
-        // Check id
-        if (id == null) throw new IllegalArgumentException("AuthToken id cannot be null");
-        if (id < 1) throw new IllegalArgumentException("AuthToken id must be greater than 0");
-
+    // Delete a refresh token
+    public void deleteRefreshToken(Integer id) {
         try {
+
+            // Check ID
+            if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
 
             // SQL statement to delete the token
             PreparedStatement preparedStatement = connection.prepareStatement(
-                    "DELETE FROM AuthToken WHERE id = ?"
+                    "DELETE FROM RefreshToken WHERE id = ?"
             );
 
             // Set the parameters
@@ -180,7 +96,35 @@ public class SQL extends Driver {
             preparedStatement.close();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to delete AuthToken with id " + id + ": " + e.getMessage(), e);
+            throw new RuntimeException("Failed to delete RefreshToken with id " + id + ": " + e.getMessage(), e);
+        }
+    }
+
+    // Retrieve all refresh Tokens
+    public HashMap<Integer, String> getRefreshTokens() {
+        try {
+
+            // SQL statement to select all tokens
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT * FROM RefreshToken"
+            );
+
+            // Execute the query
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            // Process the result set
+            HashMap<Integer, String> refreshTokens = new HashMap<>();
+            while (resultSet.next()) refreshTokens.put(resultSet.getInt("id"), encryption.decrypt(resultSet.getString("token")));
+
+            // Close the result set and statement
+            resultSet.close();
+            preparedStatement.close();
+
+            // Return the refresh tokens
+            return refreshTokens;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to retrieve refresh tokens: " + e.getMessage(), e);
         }
     }
 }

@@ -6,6 +6,7 @@ import com.github.twitch4j.helix.domain.User;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @SuppressWarnings("ALL")
 public class ChannelSubscriber extends TwitchUser implements Serializable {
@@ -184,17 +185,13 @@ public class ChannelSubscriber extends TwitchUser implements Serializable {
         }
     }
 
-    // Methods
-    public boolean equals(ChannelSubscriber subscriber) {
-        if (subscriber == null) return false;
-        boolean isEqual = super.equals(subscriber);
-        isEqual &= channel.equals(subscriber.channel);
-        isEqual &= tier == subscriber.tier;
-        isEqual &= planName.equals(subscriber.planName);
-        isEqual &= isGift == subscriber.isGift;
-        if (gifter == null && subscriber.gifter == null) isEqual &= true;
-        else if (gifter != null && subscriber.gifter != null) isEqual &= gifter.equals(subscriber.gifter);
-        else isEqual &= false;
-        return isEqual;
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), channel);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj.getClass() == getClass() && hashCode() == obj.hashCode();
     }
 }

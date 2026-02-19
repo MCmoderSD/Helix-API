@@ -3,6 +3,7 @@ package de.MCmoderSD.helix.objects;
 import com.github.twitch4j.helix.domain.User;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 @SuppressWarnings("ALL")
 public class ChannelModerator extends TwitchUser implements Serializable {
@@ -52,9 +53,13 @@ public class ChannelModerator extends TwitchUser implements Serializable {
         return channel;
     }
 
-    // Methods
-    public boolean equals(ChannelModerator moderator) {
-        if (moderator == null) return false;
-        return super.equals(moderator) && channel.equals(moderator.channel);
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), channel);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj.getClass() == getClass() && hashCode() == obj.hashCode();
     }
 }

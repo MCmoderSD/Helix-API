@@ -6,6 +6,7 @@ import com.github.twitch4j.helix.domain.User;
 import java.io.Serializable;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @SuppressWarnings("ALL")
 public class ChannelFollower extends TwitchUser implements Serializable {
@@ -78,5 +79,15 @@ public class ChannelFollower extends TwitchUser implements Serializable {
     public boolean equals(ChannelFollower follower) {
         if (follower == null) return false;
         return super.equals(follower) && channel.equals(follower.channel) && followedAt.equals(follower.followedAt);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), channel);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj.getClass() == getClass() && hashCode() == obj.hashCode();
     }
 }
