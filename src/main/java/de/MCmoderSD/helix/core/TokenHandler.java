@@ -94,6 +94,7 @@ public class TokenHandler {
         server.registerExactPath(redirectURL.substring(redirectURL.lastIndexOf('/')), new CallbackHandler());
     }
 
+    // Request Token
     private AuthToken requestToken(HttpRequest.BodyPublisher requestBody) {
 
         // Validate Body
