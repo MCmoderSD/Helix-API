@@ -63,7 +63,7 @@ public class TokenHandler {
         this.helixHandler = helixHandler;
 
         // Load Application Config
-        JsonNode credentials = application.get("credentials");
+        var credentials = application.get("credentials");
         clientId = credentials.get("clientId").asString();
         clientSecret = credentials.get("clientSecret").asString();
         redirectURL = application.get("oAuthRedirectURL").asString();
@@ -102,7 +102,7 @@ public class TokenHandler {
         if (requestBody.contentLength() < 1) throw new IllegalArgumentException("Request body cannot be empty");
 
         // Create Request
-        HttpRequest request = requestBuilder
+        var request = requestBuilder
                 .POST(requestBody)
                 .build();
 
@@ -128,7 +128,7 @@ public class TokenHandler {
     public AuthToken refreshToken(AuthToken token) {
 
         // Create body
-        HttpRequest.BodyPublisher requestBody = HttpRequest.BodyPublishers.ofString(String.format(
+        var requestBody = HttpRequest.BodyPublishers.ofString(String.format(
                 "client_id=%s&client_secret=%s&refresh_token=%s&grant_type=refresh_token",
                 clientId,
                 clientSecret,
@@ -138,7 +138,7 @@ public class TokenHandler {
         try {
 
             // Request Token
-            AuthToken refreshedToken = requestToken(requestBody);           // Request new token
+            var refreshedToken = requestToken(requestBody);                 // Request new token
             authTokens.put(refreshedToken.getId(), refreshedToken);         // Update in Memory
             helixHandler.addCredential(refreshedToken.getAccessToken());    // Update in Helix
             sql.addRefreshToken(refreshedToken);                            // Update or add token in database
@@ -162,8 +162,8 @@ public class TokenHandler {
     public String getAuthorizationUrl(Scope... scopes) {
 
         // Build Scopes
-        StringBuilder scopeBuilder = new StringBuilder();
-        HashSet<Scope> scopeSet = new HashSet<>(Arrays.asList(scopes));
+        var scopeBuilder = new StringBuilder();
+        var scopeSet = new HashSet<>(Arrays.asList(scopes));
         for (var scope : scopeSet) scopeBuilder.append(scope.getScope()).append("+");
 
         // Return URL
@@ -188,13 +188,13 @@ public class TokenHandler {
         public void handleRequest(HttpServerExchange exchange) {
 
             // Get query
-            String query = exchange.getQueryString();
+            var query = exchange.getQueryString();
 
             // Check if the query contains the code
             if (query != null && query.contains("code=")) {
 
                 // Create Request Body
-                HttpRequest.BodyPublisher requestBody = HttpRequest.BodyPublishers.ofString(String.format(
+                var requestBody = HttpRequest.BodyPublishers.ofString(String.format(
                         "client_id=%s&client_secret=%s&code=%s&grant_type=authorization_code&redirect_uri=%s",
                         clientId,
                         clientSecret,
@@ -205,7 +205,7 @@ public class TokenHandler {
                 try {
 
                     // Request Token
-                    AuthToken token = requestToken(requestBody);            // Request new token
+                    var token = requestToken(requestBody);              // Request new token
                     authTokens.put(token.getId(), token);                   // Add to Memory
                     helixHandler.addCredential(token.getAccessToken());     // Add to Helix
                     sql.addRefreshToken(token);                             // Add to database

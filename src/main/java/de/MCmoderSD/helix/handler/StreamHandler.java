@@ -4,7 +4,6 @@ import com.github.twitch4j.helix.TwitchHelix;
 
 import de.MCmoderSD.helix.core.TokenHandler;
 import de.MCmoderSD.helix.enums.Scope;
-import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.helix.objects.TwitchUser;
 
 import static de.MCmoderSD.helix.enums.Scope.CHANNEL_EDIT_COMMERCIAL;
@@ -38,7 +37,7 @@ public class StreamHandler extends Handler {
         if (length == null) throw new IllegalArgumentException("Length cannot be null");
 
         // Get AuthToken
-        AuthToken authToken = tokenHandler.getAuthToken(channel.getId());
+        var authToken = tokenHandler.getAuthToken(channel.getId());
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -72,7 +71,7 @@ public class StreamHandler extends Handler {
         if (channel == null) throw new IllegalArgumentException("Channel cannot be null");
 
         // Get AuthToken
-        AuthToken authToken = tokenHandler.getAuthToken(channel.getId());
+        var authToken = tokenHandler.getAuthToken(channel.getId());
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -129,7 +128,7 @@ public class StreamHandler extends Handler {
         if (channel == null) throw new IllegalArgumentException("Channel cannot be null");
 
         // Get AuthToken
-        AuthToken authToken = tokenHandler.getAuthToken(channel.getId());
+        var authToken = tokenHandler.getAuthToken(channel.getId());
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -162,7 +161,7 @@ public class StreamHandler extends Handler {
         if (channel == null) throw new IllegalArgumentException("Channel cannot be null");
 
         // Get AuthToken
-        AuthToken authToken = tokenHandler.getAuthToken(channel.getId());
+        var authToken = tokenHandler.getAuthToken(channel.getId());
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");

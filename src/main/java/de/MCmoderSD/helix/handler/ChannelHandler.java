@@ -36,7 +36,7 @@ public class ChannelHandler extends Handler {
         // Check size and chunk
         var size = channels.size();
         if (channels.size() > LIMIT) {
-            HashSet<ChannelInfo> channelInfo = new HashSet<>();
+            var channelInfo = new HashSet<ChannelInfo>();
             for (var i = 0; i < size; i += LIMIT) channelInfo.addAll(getChannelInfo(new HashSet<>(channels.stream().toList().subList(i, Math.min(i + LIMIT, size)))));
             return channelInfo;
         }
@@ -50,7 +50,7 @@ public class ChannelHandler extends Handler {
         if (channelInformation.isEmpty()) throw new IllegalStateException("Failed to get channel information");
 
         // Map channel information to ChannelInfo objects
-        HashSet<ChannelInfo> channelInfo = new HashSet<>();
+        var channelInfo = new HashSet<ChannelInfo>();
         for (var channel : channels)
             for (var info : channelInformation)
                 if (channel.getId().toString().equals(info.getBroadcasterId()))

@@ -1,28 +1,26 @@
-import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.handler.*;
 import de.MCmoderSD.helix.objects.*;
 
 import examples.AuthExample;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 void main() {
 
     // Init Handlers
-    HelixHandler helixHandler = AuthExample.initHelix();
-    UserHandler userHandler = helixHandler.getUserHandler();
-    RoleHandler roleHandler = helixHandler.getRoleHandler();
+    var helixHandler = AuthExample.initHelix();
+    var userHandler = helixHandler.getUserHandler();
+    var roleHandler = helixHandler.getRoleHandler();
 
     // Example Users
-    TwitchUser channel = userHandler.getTwitchUser("MCmoderSD");            // Your Channel Here (needs to be authenticated)
-    TwitchUser exampleMod = userHandler.getTwitchUser("LangerLanzenLeo");   // Example Moderator
-    TwitchUser exampleEditor = userHandler.getTwitchUser("r4kunnn");        // Example Editor
-    TwitchUser exampleVIP = userHandler.getTwitchUser("RebixDev");          // Example VIP
-    TwitchUser exampleSubscriber = userHandler.getTwitchUser("seybiiiii");  // Example Subscriber
-    TwitchUser exampleFollower = userHandler.getTwitchUser("RedSmileTV");   // Example Follower
-    TwitchUser exampleUser = userHandler.getTwitchUser("ModersEsel");       // Example User
+    var channel = userHandler.getTwitchUser("MCmoderSD");           // Your Channel Here (needs to be authenticated)
+    var exampleMod = userHandler.getTwitchUser("LangerLanzenLeo");  // Example Moderator
+    var exampleEditor = userHandler.getTwitchUser("r4kunnn");       // Example Editor
+    var exampleVIP = userHandler.getTwitchUser("RebixDev");         // Example VIP
+    var exampleSubscriber = userHandler.getTwitchUser("seybiiiii"); // Example Subscriber
+    var exampleFollower = userHandler.getTwitchUser("RedSmileTV");  // Example Follower
+    var exampleUser = userHandler.getTwitchUser("ModersEsel");      // Example User
 
 
     // Promote VIP to Moderator
@@ -62,11 +60,11 @@ void main() {
 
 
     // Get Roles Lists
-    HashSet<ChannelModerator> moderators = roleHandler.getModerators(channel);      // Get all moderators
-    HashSet<ChannelEditor> editors = roleHandler.getEditors(channel);               // Get all editors
-    HashSet<ChannelVip> vips = roleHandler.getVIPs(channel);                        // Get all VIPs
-    HashSet<ChannelSubscriber> subscribers = roleHandler.getSubscribers(channel);   // Get all subscribers
-    HashSet<ChannelFollower> followers = roleHandler.getFollowers(channel);         // Get all followers
+    var moderators = roleHandler.getModerators(channel);    // Get all moderators
+    var editors = roleHandler.getEditors(channel);          // Get all editors
+    var vips = roleHandler.getVIPs(channel);                // Get all VIPs
+    var subscribers = roleHandler.getSubscribers(channel);  // Get all subscribers
+    var followers = roleHandler.getFollowers(channel);      // Get all followers
 
     // Print Sizes
     IO.println("Found Roles for " + channel.getDisplayName() + ":");
@@ -79,12 +77,12 @@ void main() {
 
 
     // Check Roles for Multiple Users
-    HashSet<TwitchUser> twitchUsers = new HashSet<>(List.of(new TwitchUser[]{ channel, exampleMod, exampleEditor, exampleVIP, exampleSubscriber, exampleFollower, exampleUser }));
-    HashMap<TwitchUser, Boolean> modMap = roleHandler.checkModerators(twitchUsers, channel);            // Check Moderators
-    HashMap<TwitchUser, Boolean> editorMap = roleHandler.checkEditors(twitchUsers, channel);            // Check Editors
-    HashMap<TwitchUser, Boolean> vipMap = roleHandler.checkVIPs(twitchUsers, channel);                  // Check VIPs
-    HashMap<TwitchUser, Boolean> subscriberMap = roleHandler.checkSubscribers(twitchUsers, channel);    // Check Subscribers
-    HashMap<TwitchUser, Boolean> followerMap = roleHandler.checkFollowers(twitchUsers, channel);        // Check Followers
+    var twitchUsers = new HashSet<>(List.of(new TwitchUser[]{ channel, exampleMod, exampleEditor, exampleVIP, exampleSubscriber, exampleFollower, exampleUser }));
+    var modMap = roleHandler.checkModerators(twitchUsers, channel);         // Check Moderators
+    var editorMap = roleHandler.checkEditors(twitchUsers, channel);         // Check Editors
+    var vipMap = roleHandler.checkVIPs(twitchUsers, channel);               // Check VIPs
+    var subscriberMap = roleHandler.checkSubscribers(twitchUsers, channel); // Check Subscribers
+    var followerMap = roleHandler.checkFollowers(twitchUsers, channel);     // Check Followers
 
     // Print positive checks
     IO.println("\nModerator Check:");

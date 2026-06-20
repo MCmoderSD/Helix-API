@@ -8,9 +8,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
 
 @SuppressWarnings("unused")
 public class SQL extends Driver {
@@ -35,10 +33,10 @@ public class SQL extends Driver {
         try (var bis = new BufferedInputStream(Objects.requireNonNull(SQL.class.getClassLoader().getResourceAsStream("database/RefreshToken.sql")))) {
 
             // Read SQL file
-            String table = new String(bis.readAllBytes());
+            var table = new String(bis.readAllBytes());
 
             // Execute SQL statement
-            PreparedStatement preparedStatement = connection.prepareStatement(table);
+            var preparedStatement = connection.prepareStatement(table);
             preparedStatement.executeUpdate();
             preparedStatement.close();
 
@@ -55,10 +53,10 @@ public class SQL extends Driver {
             if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
 
             // Variables
-            String token = encryption.encrypt(authToken.getRefreshToken());
+            var token = encryption.encrypt(authToken.getRefreshToken());
 
             // SQL statement to insert or update the token
-            PreparedStatement preparedStatement = connection.prepareStatement(
+            var preparedStatement = connection.prepareStatement(
                     "INSERT INTO RefreshToken (id, token) VALUES (?, ?) ON DUPLICATE KEY UPDATE token = ?"
             );
 
@@ -84,7 +82,7 @@ public class SQL extends Driver {
             if (id == null || id < 1) throw new IllegalArgumentException("ID cannot be null or less than 1");
 
             // SQL statement to delete the token
-            PreparedStatement preparedStatement = connection.prepareStatement(
+            var preparedStatement = connection.prepareStatement(
                     "DELETE FROM RefreshToken WHERE id = ?"
             );
 
@@ -105,15 +103,15 @@ public class SQL extends Driver {
         try {
 
             // SQL statement to select all tokens
-            PreparedStatement preparedStatement = connection.prepareStatement(
+            var preparedStatement = connection.prepareStatement(
                     "SELECT * FROM RefreshToken"
             );
 
             // Execute the query
-            ResultSet resultSet = preparedStatement.executeQuery();
+            var resultSet = preparedStatement.executeQuery();
 
             // Process the result set
-            HashMap<Integer, String> refreshTokens = new HashMap<>();
+            var refreshTokens = new HashMap<Integer, String>();
             while (resultSet.next()) refreshTokens.put(resultSet.getInt("id"), encryption.decrypt(resultSet.getString("token")));
 
             // Close the result set and statement

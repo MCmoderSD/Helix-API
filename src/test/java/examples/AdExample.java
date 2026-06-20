@@ -1,5 +1,3 @@
-import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.objects.TwitchUser;
 import de.MCmoderSD.helix.handler.*;
 
 import examples.AuthExample;
@@ -9,12 +7,12 @@ import static de.MCmoderSD.helix.handler.StreamHandler.CommercialLength.LENGTH_3
 void main() {
 
     // Init HelixHandler
-    HelixHandler helixHandler = AuthExample.initHelix();
-    UserHandler userHandler = helixHandler.getUserHandler();
-    StreamHandler streamHandler = helixHandler.getStreamHandler();
+    var helixHandler = AuthExample.initHelix();
+    var userHandler = helixHandler.getUserHandler();
+    var streamHandler = helixHandler.getStreamHandler();
 
     // Get Channel
-    TwitchUser channel = userHandler.getTwitchUser("MCmoderSD");    // Channel to run ad on
+    var channel = userHandler.getTwitchUser("MCmoderSD"); // Channel to run ad on
 
     // Run Ad
     streamHandler.runCommercial(channel, LENGTH_30);

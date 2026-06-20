@@ -1,18 +1,13 @@
 package de.MCmoderSD.helix.handler;
 
 import com.github.twitch4j.helix.TwitchHelix;
-import com.github.twitch4j.helix.domain.Chatter;
-import com.github.twitch4j.helix.domain.HelixPagination;
-import com.github.twitch4j.helix.domain.User;
 
 import de.MCmoderSD.helix.core.TokenHandler;
 import de.MCmoderSD.helix.enums.Scope;
-import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.helix.objects.TwitchUser;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 
 import static de.MCmoderSD.helix.enums.Scope.MODERATOR_READ_CHATTERS;
@@ -56,15 +51,15 @@ public class ChatHandler extends Handler {
         if (chatters.isEmpty()) return new HashSet<>(); // No chatters found
 
         // Convert to TwitchUser
-        HashSet<Integer> chatterIds = new HashSet<>();
-        for (Chatter chatter : chatters) chatterIds.add(Integer.parseInt(chatter.getUserId()));
-        HashMap<Integer, User> userMap = getUsersByIDsMap(chatterIds);
-        HashSet<TwitchUser> fetchedChatters = new HashSet<>();
+        var chatterIds = new HashSet<Integer>();
+        for (var chatter : chatters) chatterIds.add(Integer.parseInt(chatter.getUserId()));
+        var userMap = getUsersByIDsMap(chatterIds);
+        var fetchedChatters = new HashSet<TwitchUser>();
         for (var chatter : chatters) fetchedChatters.add(new TwitchUser(userMap.get(Integer.parseInt(chatter.getUserId()))));
 
         // Check if there are more moderators
-        HelixPagination pagination = chattersList.getPagination();
-        String nextCursor = pagination != null ? pagination.getCursor() : null;
+        var pagination = chattersList.getPagination();
+        var nextCursor = pagination != null ? pagination.getCursor() : null;
         if (nextCursor != null) fetchedChatters.addAll(getChatters(channel, accessToken, nextCursor));
 
         // Return Chatters
@@ -78,7 +73,7 @@ public class ChatHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -109,14 +104,14 @@ public class ChatHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
         if (!authToken.hasScope(MODERATOR_MANAGE_CHAT_MESSAGES)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + MODERATOR_MANAGE_CHAT_MESSAGES.getScope());
 
         // Delete Messages
-        String accessToken = authToken.getAccessToken();
+        var accessToken = authToken.getAccessToken();
         for (var message : messageIds) helix.deleteChatMessages(
                 accessToken,        // Access Token
                 id.toString(),      // Broadcaster ID

@@ -5,7 +5,6 @@ import de.MCmoderSD.helix.enums.Scope;
 
 import com.github.twitch4j.helix.TwitchHelix;
 
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
@@ -36,7 +35,7 @@ public class AuthToken implements Serializable {
         if (responseBody == null || responseBody.isBlank()) throw new IllegalArgumentException("Response body cannot be null or empty");
 
         // Parse JSON
-        JsonNode response = new ObjectMapper().readTree(responseBody);
+        var response = new ObjectMapper().readTree(responseBody);
 
         // Validate JSON
         if (!response.has("access_token") || response.get("access_token").isNull() || !response.get("access_token").isString()) throw new IllegalArgumentException("Response body does not contain access_token");

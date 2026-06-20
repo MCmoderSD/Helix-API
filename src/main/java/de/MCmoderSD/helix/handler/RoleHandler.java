@@ -1,13 +1,10 @@
 package de.MCmoderSD.helix.handler;
 
 import com.github.twitch4j.helix.TwitchHelix;
-import com.github.twitch4j.helix.domain.User;
-import com.github.twitch4j.helix.domain.HelixPagination;
 import org.jetbrains.annotations.Nullable;
 
 import de.MCmoderSD.helix.core.TokenHandler;
 import de.MCmoderSD.helix.enums.Scope;
-import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.helix.objects.ChannelModerator;
 import de.MCmoderSD.helix.objects.ChannelEditor;
 import de.MCmoderSD.helix.objects.ChannelVip;
@@ -65,10 +62,10 @@ public class RoleHandler extends Handler {
         tokenHandler.getAuthTokens().forEach((id, authToken) -> new Thread(() -> {
 
             // Check scopes
-            boolean moderators = authToken.hasScope(MODERATION_READ) || authToken.hasScope(CHANNEL_MANAGE_MODERATORS);
-            boolean vips = authToken.hasScope(CHANNEL_READ_VIPS) || authToken.hasScope(CHANNEL_MANAGE_VIPS);
-            boolean subscribers = authToken.hasScope(CHANNEL_READ_SUBSCRIPTIONS);
-            boolean followers = authToken.hasScope(MODERATOR_READ_FOLLOWERS);
+            var moderators = authToken.hasScope(MODERATION_READ) || authToken.hasScope(CHANNEL_MANAGE_MODERATORS);
+            var vips = authToken.hasScope(CHANNEL_READ_VIPS) || authToken.hasScope(CHANNEL_MANAGE_VIPS);
+            var subscribers = authToken.hasScope(CHANNEL_READ_SUBSCRIPTIONS);
+            var followers = authToken.hasScope(MODERATOR_READ_FOLLOWERS);
 
             // Initialize empty cache
             if (moderators) moderatorCache.put(id, getModerators(id));      // Moderators
@@ -107,20 +104,20 @@ public class RoleHandler extends Handler {
         if (moderators.isEmpty()) return new HashSet<>(); // No moderators found
 
         // Check if cache is up to date
-        HashSet<ChannelModerator> cache = moderatorCache.get(id);
+        var cache = moderatorCache.get(id);
         if (cursor == null && cache != null) {
-            HashSet<String> cachedIds = new HashSet<>();
-            HashSet<String> fetchedIds = new HashSet<>();
+            var cachedIds = new HashSet<String>();
+            var fetchedIds = new HashSet<String>();
             cache.forEach(moderator -> cachedIds.add(moderator.getId().toString()));
             moderators.forEach(moderator -> fetchedIds.add(moderator.getUserId()));
             if (cachedIds.containsAll(fetchedIds)) return null; // Cache is up to date
         }
 
         // Convert to ChannelModerator HashSet
-        HashSet<Integer> moderatorIds = new HashSet<>();
+        var moderatorIds = new HashSet<Integer>();
         for (var moderator : moderators) moderatorIds.add(Integer.parseInt(moderator.getUserId()));
-        HashMap<Integer, User> userMap = getUsersByIDsMap(moderatorIds);
-        HashSet<ChannelModerator> fetchedModerators = new HashSet<>();
+        var userMap = getUsersByIDsMap(moderatorIds);
+        var fetchedModerators = new HashSet<ChannelModerator>();
         for (var moderator : moderators) {
 
             // Get User
@@ -135,8 +132,8 @@ public class RoleHandler extends Handler {
         }
 
         // Check if there are more moderators
-        HelixPagination pagination = moderatorList.getPagination();
-        String nextCursor = pagination != null ? pagination.getCursor() : null;
+        var pagination = moderatorList.getPagination();
+        var nextCursor = pagination != null ? pagination.getCursor() : null;
         if (nextCursor != null) fetchedModerators.addAll(Objects.requireNonNull(getModerators(channel, accessToken, nextCursor)));
 
         // Return moderators
@@ -150,14 +147,14 @@ public class RoleHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
         if (!(authToken.hasScope(MODERATION_READ) || authToken.hasScope(CHANNEL_MANAGE_MODERATORS))) throw new IllegalArgumentException("AuthToken does not have the required scope: " + MODERATION_READ.getScope() + " or " + CHANNEL_MANAGE_MODERATORS.getScope());
 
         // Get moderators
-        HashSet<ChannelModerator> moderators = getModerators(channel, authToken.getAccessToken(), null);
+        var moderators = getModerators(channel, authToken.getAccessToken(), null);
         if (moderators == null) return moderatorCache.get(id);  // Cache is up to date
         if (moderators.isEmpty()) return new HashSet<>();       // No moderators found
 
@@ -187,7 +184,7 @@ public class RoleHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -203,10 +200,10 @@ public class RoleHandler extends Handler {
         if (editors.isEmpty()) return new HashSet<>();
 
         // Convert to ChannelEditor HashSet
-        HashSet<Integer> editorIds = new HashSet<>();
+        var editorIds = new HashSet<Integer>();
         for (var editor : editors) editorIds.add(Integer.parseInt(editor.getUserId()));
-        HashMap<Integer, User> userMap = getUsersByIDsMap(editorIds);
-        HashSet<ChannelEditor> channelEditors = new HashSet<>();
+        var userMap = getUsersByIDsMap(editorIds);
+        var channelEditors = new HashSet<ChannelEditor>();
         for (var editor : editors) {
 
             // Get User
@@ -255,20 +252,20 @@ public class RoleHandler extends Handler {
         if (vips.isEmpty()) return new HashSet<>();
 
         // Check if cache is up to date
-        HashSet<ChannelVip> cache = vipCache.get(id);
+        var cache = vipCache.get(id);
         if (cursor == null && cache != null) {
-            HashSet<String> cachedIds = new HashSet<>();
-            HashSet<String> fetchedIds = new HashSet<>();
+            var cachedIds = new HashSet<String>();
+            var fetchedIds = new HashSet<String>();
             cache.forEach(vip -> cachedIds.add(vip.getId().toString()));
             vips.forEach(vip -> fetchedIds.add(vip.getUserId()));
             if (cachedIds.containsAll(fetchedIds)) return null; // Cache is up to date
         }
 
         // Convert to ChannelVip HashSet
-        HashSet<Integer> vipIds = new HashSet<>();
+        var vipIds = new HashSet<Integer>();
         for (var vip : vips) vipIds.add(Integer.parseInt(vip.getUserId()));
-        HashMap<Integer, User> userMap = getUsersByIDsMap(vipIds);
-        HashSet<ChannelVip> fetchedVips = new HashSet<>();
+        var userMap = getUsersByIDsMap(vipIds);
+        var fetchedVips = new HashSet<ChannelVip>();
         for (var vip : vips) {
 
             // Get User
@@ -283,8 +280,8 @@ public class RoleHandler extends Handler {
         }
 
         // Check if there are more VIPs
-        HelixPagination pagination = vipList.getPagination();
-        String nextCursor = pagination != null ? pagination.getCursor() : null;
+        var pagination = vipList.getPagination();
+        var nextCursor = pagination != null ? pagination.getCursor() : null;
         if (nextCursor != null) fetchedVips.addAll(Objects.requireNonNull(getVIPs(channel, accessToken, nextCursor)));
 
         // Return VIPs
@@ -298,14 +295,14 @@ public class RoleHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
         if (!(authToken.hasScope(CHANNEL_READ_VIPS) || authToken.hasScope(CHANNEL_MANAGE_VIPS))) throw new IllegalArgumentException("AuthToken does not have the required scope: " + CHANNEL_READ_VIPS.getScope() + " or " + CHANNEL_MANAGE_VIPS.getScope());
 
         // Get VIPs
-        HashSet<ChannelVip> vips = getVIPs(channel, authToken.getAccessToken(), null);
+        var vips = getVIPs(channel, authToken.getAccessToken(), null);
         if (vips == null) return vipCache.get(id);      // Cache is up to date
         if (vips.isEmpty()) return new HashSet<>();     // No VIPs found
 
@@ -347,23 +344,23 @@ public class RoleHandler extends Handler {
         if (subscriptions.isEmpty()) return new HashSet<>();
 
         // Check if cache is up to date
-        HashSet<ChannelSubscriber> cache = subscriberCache.get(id);
+        var cache = subscriberCache.get(id);
         if (cursor == null && cache != null) {
-            HashSet<String> cachedIds = new HashSet<>();
-            HashSet<String> fetchedIds = new HashSet<>();
+            var cachedIds = new HashSet<String>();
+            var fetchedIds = new HashSet<String>();
             cache.forEach(subscriber -> cachedIds.add(subscriber.getId().toString()));
             subscriptions.forEach(subscriber -> fetchedIds.add(subscriber.getUserId()));
             if (cachedIds.containsAll(fetchedIds)) return null; // Cache is up to date
         }
 
         // Convert to ChannelSubscriber HashSet
-        HashSet<Integer> subscriberIds = new HashSet<>();
+        var subscriberIds = new HashSet<Integer>();
         for (var subscription : subscriptions) {
             subscriberIds.add(Integer.parseInt(subscription.getUserId()));
             if (subscription.getIsGift()) subscriberIds.add(Integer.parseInt(subscription.getGifterId()));
         }
-        HashMap<Integer, User> userMap = getUsersByIDsMap(subscriberIds);
-        HashSet<ChannelSubscriber> fetchedChannelSubscribers = new HashSet<>();
+        var userMap = getUsersByIDsMap(subscriberIds);
+        var fetchedChannelSubscribers = new HashSet<ChannelSubscriber>();
         for (var subscription : subscriptions) {
 
             // Get User
@@ -380,8 +377,8 @@ public class RoleHandler extends Handler {
         }
 
         // Check if there are more Subscribers
-        HelixPagination pagination = subscriptionList.getPagination();
-        String nextCursor = pagination != null ? pagination.getCursor() : null;
+        var pagination = subscriptionList.getPagination();
+        var nextCursor = pagination != null ? pagination.getCursor() : null;
         if (nextCursor != null) fetchedChannelSubscribers.addAll(Objects.requireNonNull(getSubscribers(channel, accessToken, nextCursor)));
 
         // Return Subscribers
@@ -395,14 +392,14 @@ public class RoleHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
         if (!authToken.hasScope(CHANNEL_READ_SUBSCRIPTIONS)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + CHANNEL_READ_SUBSCRIPTIONS.getScope());
 
         // Get Subscribers
-        HashSet<ChannelSubscriber> subscribers = getSubscribers(channel, authToken.getAccessToken(), null);
+        var subscribers = getSubscribers(channel, authToken.getAccessToken(), null);
         if (subscribers == null) return subscriberCache.get(id);  // Cache is up to date
         if (subscribers.isEmpty()) return new HashSet<>();        // No Subscribers found
 
@@ -444,20 +441,20 @@ public class RoleHandler extends Handler {
         if (follows.isEmpty()) return new HashSet<>();
 
         // Check if cache is up to date
-        HashSet<ChannelFollower> cache = followerCache.get(id);
+        var cache = followerCache.get(id);
         if (cursor == null && cache != null) {
-            HashSet<String> cachedIds = new HashSet<>();
-            HashSet<String> fetchedIds = new HashSet<>();
+            var cachedIds = new HashSet<String>();
+            var fetchedIds = new HashSet<String>();
             cache.forEach(follower -> cachedIds.add(follower.getId().toString()));
             follows.forEach(follower -> fetchedIds.add(follower.getUserId()));
             if (cachedIds.containsAll(fetchedIds)) return null; // Cache is up to date
         }
 
         // Convert to ChannelFollower HashSet
-        HashSet<Integer> followerIds = new HashSet<>();
+        var followerIds = new HashSet<Integer>();
         for (var follow : follows) followerIds.add(Integer.parseInt(follow.getUserId()));
-        HashMap<Integer, User> userMap = getUsersByIDsMap(followerIds);
-        HashSet<ChannelFollower> fetchedFollowers = new HashSet<>();
+        var userMap = getUsersByIDsMap(followerIds);
+        var fetchedFollowers = new HashSet<ChannelFollower>();
         for (var follow : follows) {
 
             // Get User
@@ -473,8 +470,8 @@ public class RoleHandler extends Handler {
         }
 
         // Check if there are more Followers
-        HelixPagination pagination = inboundFollowers.getPagination();
-        String nextCursor = pagination != null ? pagination.getCursor() : null;
+        var pagination = inboundFollowers.getPagination();
+        var nextCursor = pagination != null ? pagination.getCursor() : null;
         if (nextCursor != null) fetchedFollowers.addAll(Objects.requireNonNull(getFollowers(channel, accessToken, nextCursor)));
 
         // Return Followers
@@ -488,14 +485,14 @@ public class RoleHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
         if (!authToken.hasScope(MODERATOR_READ_FOLLOWERS)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + MODERATOR_READ_FOLLOWERS.getScope());
 
         // Get Followers
-        HashSet<ChannelFollower> followers = getFollowers(channel, authToken.getAccessToken(), null);
+        var followers = getFollowers(channel, authToken.getAccessToken(), null);
         if (followers == null) return followerCache.get(id);    // Cache is up to date
         if (followers.isEmpty()) return new HashSet<>();        // No Followers found
 
@@ -533,7 +530,7 @@ public class RoleHandler extends Handler {
 
         // Variables
         var id = channel.getId().toString();
-        HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+        var userMap = new HashMap<TwitchUser, Boolean>();
 
         // Get moderators
         var moderatorList = helix.getModerators(accessToken, id, users.stream().map(user -> user.getId().toString()).toList(), null, LIMIT).execute();
@@ -548,7 +545,7 @@ public class RoleHandler extends Handler {
         }
 
         // Mark found moderators
-        HashSet<Integer> moderatorIds = new HashSet<>(moderators.stream().map(moderator -> Integer.parseInt(moderator.getUserId())).toList());
+        var moderatorIds = new HashSet<>(moderators.stream().map(moderator -> Integer.parseInt(moderator.getUserId())).toList());
         for (var user : users) {
             if (moderatorIds.contains(user.getId())) userMap.put(user, true);
             else userMap.put(user, false);
@@ -568,14 +565,14 @@ public class RoleHandler extends Handler {
         // Get size
         var size = users.size();
         if (size == 1 && users.iterator().next().equals(channel)) { // Broadcaster cannot be moderator
-            HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+            var userMap = new HashMap<TwitchUser, Boolean>();
             userMap.put(users.iterator().next(), false);
             return userMap;
         }
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -583,7 +580,7 @@ public class RoleHandler extends Handler {
 
         // Check size and chunk
         if (size > LIMIT) {
-            HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+            var userMap = new HashMap<TwitchUser, Boolean>();
             for (var i = 0; i < size; i += LIMIT) userMap.putAll(checkModerators(new HashSet<>(users.stream().toList().subList(i, Math.min(i + LIMIT, size))), channel, authToken.getAccessToken()));
             return userMap;
         } else return checkModerators(users, channel, authToken.getAccessToken());
@@ -638,19 +635,19 @@ public class RoleHandler extends Handler {
 
         // Check if channel is in users
         if (users.size() == 1 && users.iterator().next().equals(channel)) { // Broadcaster cannot be editor
-            HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+            var userMap = new HashMap<TwitchUser, Boolean>();
             userMap.put(users.iterator().next(), false);
             return userMap;
         }
 
         // Variables
-        HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+        var userMap = new HashMap<TwitchUser, Boolean>();
 
         // Get Editors
-        HashSet<ChannelEditor> editors = getEditors(channel);
+        var editors = getEditors(channel);
 
         // Mark found editors
-        HashSet<Integer> editorIds = new HashSet<>(editors.stream().map(TwitchUser::getId).toList());
+        var editorIds = new HashSet<>(editors.stream().map(TwitchUser::getId).toList());
         for (var user : users) {
             if (editorIds.contains(user.getId())) userMap.put(user, true);
             else userMap.put(user, false);
@@ -710,7 +707,7 @@ public class RoleHandler extends Handler {
 
         // Variables
         var id = channel.getId().toString();
-        HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+        var userMap = new HashMap<TwitchUser, Boolean>();
 
         // Get vips
         var vipList = helix.getChannelVips(accessToken, id, users.stream().map(user -> user.getId().toString()).toList(), LIMIT, null).execute();
@@ -725,7 +722,7 @@ public class RoleHandler extends Handler {
         }
 
         // Mark found vips
-        HashSet<Integer> vipIds = new HashSet<>(vips.stream().map(vip -> Integer.parseInt(vip.getUserId())).toList());
+        var vipIds = new HashSet<>(vips.stream().map(vip -> Integer.parseInt(vip.getUserId())).toList());
         for (var user : users) {
             if (vipIds.contains(user.getId())) userMap.put(user, true);
             else userMap.put(user, false);
@@ -745,14 +742,14 @@ public class RoleHandler extends Handler {
         // Get size
         var size = users.size();
         if (size == 1 && users.iterator().next().equals(channel)) { // Broadcaster cannot be VIP
-            HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+            var userMap = new HashMap<TwitchUser, Boolean>();
             userMap.put(users.iterator().next(), false);
             return userMap;
         }
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -760,7 +757,7 @@ public class RoleHandler extends Handler {
 
         // Check size and chunk
         if (size > LIMIT) {
-            HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+            var userMap = new HashMap<TwitchUser, Boolean>();
             for (var i = 0; i < size; i += LIMIT) userMap.putAll(checkVIPs(new HashSet<>(users.stream().toList().subList(i, Math.min(i + LIMIT, size))), channel, authToken.getAccessToken()));
             return userMap;
         } else return checkVIPs(users, channel, authToken.getAccessToken());
@@ -814,13 +811,13 @@ public class RoleHandler extends Handler {
         if (channel == null) throw new IllegalArgumentException("Channel cannot be null");
 
         // Variables
-        HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+        var userMap = new HashMap<TwitchUser, Boolean>();
 
         // Get Subscribers
-        HashSet<ChannelSubscriber> subscribers = getSubscribers(channel);
+        var subscribers = getSubscribers(channel);
 
         // Mark found subscribers
-        HashSet<Integer> subscriberIds = new HashSet<>(subscribers.stream().map(TwitchUser::getId).toList());
+        var subscriberIds = new HashSet<>(subscribers.stream().map(TwitchUser::getId).toList());
         for (var user : users) {
             if (subscriberIds.contains(user.getId())) userMap.put(user, true);
             else userMap.put(user, false);
@@ -879,19 +876,19 @@ public class RoleHandler extends Handler {
 
         // Check if channel is in users
         if (users.size() == 1 && users.iterator().next().equals(channel)) { // Broadcaster cannot be follower
-            HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+            var userMap = new HashMap<TwitchUser, Boolean>();
             userMap.put(users.iterator().next(), false);
             return userMap;
         }
 
         // Variables
-        HashMap<TwitchUser, Boolean> userMap = new HashMap<>();
+        var userMap = new HashMap<TwitchUser, Boolean>();
 
         // Get Subscribers
-        HashSet<ChannelFollower> followers = getFollowers(channel);
+        var followers = getFollowers(channel);
 
         // Mark found followers
-        HashSet<Integer> followerIds = new HashSet<>(followers.stream().map(TwitchUser::getId).toList());
+        var followerIds = new HashSet<>(followers.stream().map(TwitchUser::getId).toList());
         for (var user : users) {
             if (followerIds.contains(user.getId())) userMap.put(user, true);
             else userMap.put(user, false);
@@ -921,7 +918,7 @@ public class RoleHandler extends Handler {
         // Get Access Token
         var id = channel.getId();
         var userId = user.getId().toString();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -989,7 +986,7 @@ public class RoleHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -1013,7 +1010,7 @@ public class RoleHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -1040,7 +1037,7 @@ public class RoleHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
@@ -1064,7 +1061,7 @@ public class RoleHandler extends Handler {
 
         // Get Access Token
         var id = channel.getId();
-        AuthToken authToken = tokenHandler.getAuthToken(id);
+        var authToken = tokenHandler.getAuthToken(id);
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");

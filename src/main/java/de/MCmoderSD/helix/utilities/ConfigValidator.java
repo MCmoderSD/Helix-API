@@ -13,20 +13,20 @@ public class ConfigValidator {
         if (!application.has("credentials") || application.get("credentials").isNull() || application.get("credentials").isEmpty()) throw new IllegalArgumentException("Application config is missing 'credentials'");
 
         // Check Credentials
-        JsonNode credentials = application.get("credentials");
+        var credentials = application.get("credentials");
         if (!credentials.has("clientId") || credentials.get("clientId").isNull() || !credentials.get("clientId").isString()) throw new IllegalArgumentException("Credentials config is missing 'clientId'");
         if (!credentials.has("clientSecret") || credentials.get("clientSecret").isNull() || !credentials.get("clientSecret").isString()) throw new IllegalArgumentException("Credentials config is missing 'clientSecret'");
 
         // Get Credentials
-        String clientId = credentials.get("clientId").asString();
-        String clientSecret = credentials.get("clientSecret").asString();
+        var clientId = credentials.get("clientId").asString();
+        var clientSecret = credentials.get("clientSecret").asString();
 
         // Check if clientId and clientSecret
         if (clientId == null || clientId.isBlank()) throw new IllegalArgumentException("Credentials config 'clientId' is empty");
         if (clientSecret == null || clientSecret.isBlank()) throw new IllegalArgumentException("Credentials config 'clientSecret' is empty");
 
         // Check oAuthRedirectURL
-        String oAuthRedirectURL = application.get("oAuthRedirectURL").asString();
+        var oAuthRedirectURL = application.get("oAuthRedirectURL").asString();
         if (oAuthRedirectURL == null || oAuthRedirectURL.isBlank()) throw new IllegalArgumentException("Application config 'oAuthRedirectURL' is empty");
         if (oAuthRedirectURL.endsWith("/")) throw new IllegalArgumentException("Application config 'oAuthRedirectURL' must not end with '/'");
         if (!oAuthRedirectURL.startsWith("http")) throw new IllegalArgumentException("Application config 'oAuthRedirectURL' is not a valid URL");
@@ -45,10 +45,10 @@ public class ConfigValidator {
         if (!database.has("password") || database.get("password").isNull() || !database.get("password").isString()) throw new IllegalArgumentException("Database config is missing 'password'");
 
         // Get Database Config
-        String host = database.get("host").asString();
-        String dbName = database.get("database").asString();
-        String user = database.get("username").asString();
-        String password = database.get("password").asString();
+        var host = database.get("host").asString();
+        var dbName = database.get("database").asString();
+        var user = database.get("username").asString();
+        var password = database.get("password").asString();
 
         // Check if host, database, username and password are valid
         if (host == null || host.isBlank()) throw new IllegalArgumentException("Database config 'host' is empty");

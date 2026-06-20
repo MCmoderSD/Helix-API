@@ -48,9 +48,9 @@ public class HelixHandler {
         if (server == null) throw new IllegalArgumentException("Server instance is null");
 
         // Get Twitch Credentials
-        JsonNode credentials = application.get("credentials");
-        String clientId = credentials.get("clientId").asString();
-        String clientSecret = credentials.get("clientSecret").asString();
+        var credentials = application.get("credentials");
+        var clientId = credentials.get("clientId").asString();
+        var clientSecret = credentials.get("clientSecret").asString();
 
         // Initialize Credential TokenHandler
         credentialManager = CredentialManagerBuilder.builder().build();

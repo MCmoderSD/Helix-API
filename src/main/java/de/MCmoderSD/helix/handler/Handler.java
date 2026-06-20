@@ -82,7 +82,7 @@ public abstract class Handler {
         // Check size and chunk
         var size = ids.size();
         if (size > LIMIT) {
-            HashSet<User> users = new HashSet<>();
+           var users = new HashSet<User>();
             for (var i = 0; i < size; i += LIMIT) users.addAll(getUsersByIDs(new HashSet<>(ids.stream().toList().subList(i, Math.min(i + LIMIT, size)))));
             return users;
         }
@@ -110,7 +110,7 @@ public abstract class Handler {
         // Check size and chunk
         var size = usernames.size();
         if (size > LIMIT) {
-            HashSet<User> users = new HashSet<>();
+            var users = new HashSet<User>();
             for (var i = 0; i < size; i += LIMIT) users.addAll(getUsersByName(new HashSet<>(usernames.stream().toList().subList(i, Math.min(i + LIMIT, size)))));
             return users;
         }
@@ -130,16 +130,16 @@ public abstract class Handler {
 
     // Get User Map by IDs
     public HashMap<Integer, User> getUsersByIDsMap(HashSet<Integer> ids) {
-        HashSet<User> users = getUsersByIDs(ids);
-        HashMap<Integer, User> userMap = new HashMap<>();
+        var users = getUsersByIDs(ids);
+        var userMap = new HashMap<Integer, User>();
         for (var user : users) userMap.put(Integer.parseInt(user.getId()), user);
         return userMap;
     }
 
     // Get User Map by names
     public HashMap<String, User> getUsersByNameMap(HashSet<String> usernames) {
-        HashSet<User> users = getUsersByName(usernames);
-        HashMap<String, User> userMap = new HashMap<>();
+        var users = getUsersByName(usernames);
+        var userMap = new HashMap<String, User>();
         for (var user : users) userMap.put(user.getLogin(), user);
         return userMap;
     }

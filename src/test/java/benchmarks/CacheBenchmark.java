@@ -1,12 +1,7 @@
 import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.enums.Scope;
-import de.MCmoderSD.helix.objects.TwitchUser;
-import de.MCmoderSD.helix.handler.UserHandler;
-import de.MCmoderSD.helix.handler.RoleHandler;
 import de.MCmoderSD.json.JsonUtility;
 import de.MCmoderSD.server.core.Server;
-
-import tools.jackson.databind.JsonNode;
 
 import static de.MCmoderSD.helix.enums.Scope.MODERATION_READ;
 import static de.MCmoderSD.helix.enums.Scope.CHANNEL_READ_VIPS;
@@ -22,24 +17,24 @@ void main() {
 
     // Load Config
     configStartTime = System.nanoTime();
-    JsonNode config = JsonUtility.getInstance().loadResource("/config.json");
+    var config = JsonUtility.getInstance().loadResource("/config.json");
 
     // Load Config
-    JsonNode applicationConfig = config.get("twitch").get("application");
-    JsonNode databaseConfig = config.get("database");
-    JsonNode serverConfig = config.get("server");
+    var applicationConfig = config.get("twitch").get("application");
+    var databaseConfig = config.get("database");
+    var serverConfig = config.get("server");
     configEndTime = System.nanoTime();
 
 
     // Init Server
     serverStartTime = System.nanoTime();
-    Server server = new Server(serverConfig);
+    var server = new Server(serverConfig);
     server.start();
     serverEndTime = System.nanoTime();
 
     // Init HelixHandler
     helixInitStartTime = System.nanoTime();
-    HelixHandler helixHandler = new HelixHandler(applicationConfig, databaseConfig, server);
+    var helixHandler = new HelixHandler(applicationConfig, databaseConfig, server);
     helixInitEndTime = System.nanoTime();
 
     // Print Initialization Times
@@ -48,7 +43,7 @@ void main() {
     IO.println("HelixHandler Initialization Time: " + (helixInitEndTime - helixInitStartTime) / 1_000_000 + " ms");
 
     // Setup Scopes
-    Scope[] scopes = new Scope[]{
+    var scopes = new Scope[]{
             MODERATION_READ,
             CHANNEL_READ_VIPS,
             CHANNEL_READ_SUBSCRIPTIONS,
@@ -59,11 +54,11 @@ void main() {
     IO.println("\nPlease authorize the application if you haven't done so already.\n" + helixHandler.getAuthorizationUrl(scopes) + "\n");
 
     // Get Handlers
-    UserHandler userHandler = helixHandler.getUserHandler();
-    RoleHandler roleHandler = helixHandler.getRoleHandler();
+    var userHandler = helixHandler.getUserHandler();
+    var roleHandler = helixHandler.getRoleHandler();
 
     // Get Example User
-    TwitchUser channel = userHandler.getTwitchUser("r4kunnn");
+    var channel = userHandler.getTwitchUser("r4kunnn");
 
     // Declare Benchmark Variables
     var rounds = 10; // Number of rounds to average
@@ -147,8 +142,7 @@ void main() {
         followerCacheEndTime[i] = System.nanoTime();
 
         if (i == 0) IO.println("Warm-up round completed... took " + (System.nanoTime() - start) / 1_000_000 + " ms");
-        else
-            IO.println("Completed benchmark round " + (i) + " of " + rounds + "... took " + (System.nanoTime() - start) / 1_000_000 + " ms");
+        else IO.println("Completed benchmark round " + (i) + " of " + rounds + "... took " + (System.nanoTime() - start) / 1_000_000 + " ms");
     }
 
 
@@ -159,14 +153,14 @@ void main() {
     var followerSize = roleHandler.getFollowers(channel).size();
 
     // Declare Average Times
-    long moderatorNonCacheTime = 0;
-    long moderatorCacheTime = 0;
-    long vipNonCacheTime = 0;
-    long vipCacheTime = 0;
-    long subscriberNonCacheTime = 0;
-    long subscriberCacheTime = 0;
-    long followerNonCacheTime = 0;
-    long followerCacheTime = 0;
+    var moderatorNonCacheTime = 0L;
+    var moderatorCacheTime = 0L;
+    var vipNonCacheTime = 0L;
+    var vipCacheTime = 0L;
+    var subscriberNonCacheTime = 0L;
+    var subscriberCacheTime = 0L;
+    var followerNonCacheTime = 0L;
+    var followerCacheTime = 0L;
 
     // Aggregate Times
     for (var i = 1; i < rounds + 1; i++) {

@@ -1,22 +1,18 @@
-import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.handler.UserHandler;
-import de.MCmoderSD.helix.objects.TwitchUser;
-
 import examples.AuthExample;
 
 void main() {
 
     // Init HelixHandler
-    HelixHandler helixHandler = AuthExample.initHelix();
-    UserHandler userHandler = helixHandler.getUserHandler();
+    var helixHandler = AuthExample.initHelix();
+    var userHandler = helixHandler.getUserHandler();
 
     // Example Variables
-    var exampleId = 164284617;              // User ID
-    var exampleUsername = "MCmoderSD";      // Username
+    var exampleId = 164284617;          // User ID
+    var exampleUsername = "MCmoderSD";  // Username
 
     // Get TwitchUser
-    TwitchUser user = userHandler.getTwitchUser(exampleId);                 // By ID
-    TwitchUser userByName = userHandler.getTwitchUser(exampleUsername);     // By Username
+    var user = userHandler.getTwitchUser(exampleId);                    // By ID
+    var userByName = userHandler.getTwitchUser(exampleUsername);        // By Username
 
     // Check both are the same
     IO.println("Users are the same: " + user.equals(userByName));
@@ -35,7 +31,7 @@ void main() {
     IO.println("-----------------------------------\n");
 
     // Get User Email (requires USER_READ_EMAIL scope)
-    String email = userHandler.getUserMail(user);                               // By TwitchUser
+    var email = userHandler.getUserMail(user);                          // By TwitchUser
     IO.println("Email: " + email);
 
     // Get User Email by ID and Username

@@ -1,12 +1,9 @@
 package de.MCmoderSD.helix.handler;
 
 import com.github.twitch4j.helix.TwitchHelix;
-import com.github.twitch4j.helix.domain.User;
-import com.github.twitch4j.helix.domain.UserList;
 
 import de.MCmoderSD.helix.core.TokenHandler;
 import de.MCmoderSD.helix.enums.Scope;
-import de.MCmoderSD.helix.objects.AuthToken;
 import de.MCmoderSD.helix.objects.TwitchUser;
 
 import java.util.Collections;
@@ -42,8 +39,8 @@ public class UserHandler extends Handler {
         for (var id : ids) if (id == null || id < 1) throw new IllegalArgumentException("Invalid ID in IDs: " + id);
 
         // Variables
-        HashSet<User> users = getUsersByIDs(ids);
-        HashSet<TwitchUser> twitchUsers = new HashSet<>();
+        var users = getUsersByIDs(ids);
+        var twitchUsers = new HashSet<TwitchUser>();
 
         // Convert IDs to String
         for (var user : users) twitchUsers.add(new TwitchUser(user));
@@ -59,8 +56,8 @@ public class UserHandler extends Handler {
         for (var username : usernames) if (username == null || username.isBlank() || username.contains(" ")) throw new IllegalArgumentException("Invalid username in usernames: " + username);
 
         // Variables
-        HashSet<User> users = getUsersByName(usernames);
-        HashSet<TwitchUser> twitchUsers = new HashSet<>();
+        var users = getUsersByName(usernames);
+        var twitchUsers = new HashSet<TwitchUser>();
 
         // Convert IDs to String
         for (var user : users) twitchUsers.add(new TwitchUser(user));
@@ -75,14 +72,14 @@ public class UserHandler extends Handler {
         if (twitchUser == null) throw new IllegalArgumentException("TwitchUser cannot be null");
 
         // Get AuthToken
-        AuthToken authToken = tokenHandler.getAuthToken(twitchUser.getId());
+        var authToken = tokenHandler.getAuthToken(twitchUser.getId());
 
         // Check AuthToken
         if (authToken == null) throw new IllegalArgumentException("AuthToken cannot be null");
         if (!authToken.hasScope(USER_READ_EMAIL)) throw new IllegalArgumentException("AuthToken does not have the required scope: " + USER_READ_EMAIL.getScope());
 
         // Get user ID
-        UserList userList = helix.getUsers(
+        var userList = helix.getUsers(
                 authToken.getAccessToken(),                                 // Access Token
                 Collections.singletonList(twitchUser.getId().toString()),   // ID
                 Collections.singletonList(twitchUser.getUsername())         // Username

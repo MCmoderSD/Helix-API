@@ -143,7 +143,7 @@ Add the dependency to your `pom.xml` file:
 <dependency>
     <groupId>de.MCmoderSD</groupId>
     <artifactId>Helix-API</artifactId>
-    <version>2.3.3</version>
+    <version>2.3.4</version>
 </dependency>
 ```
 
@@ -164,8 +164,6 @@ import de.MCmoderSD.helix.handler.*;
 import de.MCmoderSD.json.JsonUtility;
 import de.MCmoderSD.server.core.Server;
 
-import tools.jackson.databind.JsonNode;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
@@ -176,15 +174,15 @@ public class AuthExample {
   public static HelixHandler initHelix() {
 
     // Load Config
-    JsonNode config = JsonUtility.getInstance().loadResource("/config.json");
+    var config = JsonUtility.getInstance().loadResource("/config.json");
 
     // Load Config
-    JsonNode applicationConfig = config.get("twitch").get("application");
-    JsonNode databaseConfig = config.get("database");
-    JsonNode serverConfig = config.get("server");
+    var applicationConfig = config.get("twitch").get("application");
+    var databaseConfig = config.get("database");
+    var serverConfig = config.get("server");
 
     // Init Server
-    Server server = new Server(serverConfig);
+    var server = new Server(serverConfig);
     server.start();
 
     // Init HelixHandler
@@ -194,17 +192,17 @@ public class AuthExample {
   void main() {
 
     // Init HelixHandler
-    HelixHandler helixHandler = initHelix();
+    var helixHandler = initHelix();
 
     // Setup Scopes
-    Scope[] scopes = new ArrayList<>(Arrays.asList(UserHandler.REQUIRED_SCOPES, ChatHandler.REQUIRED_SCOPES, RoleHandler.REQUIRED_SCOPES, StreamHandler.REQUIRED_SCOPES, ChannelHandler.REQUIRED_SCOPES))
+    var scopes = new ArrayList<>(Arrays.asList(UserHandler.REQUIRED_SCOPES, ChatHandler.REQUIRED_SCOPES, RoleHandler.REQUIRED_SCOPES, StreamHandler.REQUIRED_SCOPES, ChannelHandler.REQUIRED_SCOPES))
             .stream()
             .flatMap(Stream::of)
             .distinct()
             .toArray(Scope[]::new);
 
     // Get Authorization URL
-    String authURL = helixHandler.getAuthorizationUrl(scopes);
+    var authURL = helixHandler.getAuthorizationUrl(scopes);
     IO.println("Authorization URL: " + authURL);
   }
 }
@@ -216,25 +214,21 @@ We will fetch a user by their ID and username, compare the two results, and prin
 
 Additionally, we will show how to retrieve the user's email address, which requires the `USER_READ_EMAIL` scope.
 ```java
-import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.handler.UserHandler;
-import de.MCmoderSD.helix.objects.TwitchUser;
-
 import examples.AuthExample;
 
 void main() {
 
   // Init HelixHandler
-  HelixHandler helixHandler = AuthExample.initHelix();
-  UserHandler userHandler = helixHandler.getUserHandler();
+  var helixHandler = AuthExample.initHelix();
+  var userHandler = helixHandler.getUserHandler();
 
   // Example Variables
-  var exampleId = 164284617;              // User ID
-  var exampleUsername = "MCmoderSD";      // Username
+  var exampleId = 164284617;          // User ID
+  var exampleUsername = "MCmoderSD";  // Username
 
   // Get TwitchUser
-  TwitchUser user = userHandler.getTwitchUser(exampleId);                 // By ID
-  TwitchUser userByName = userHandler.getTwitchUser(exampleUsername);     // By Username
+  var user = userHandler.getTwitchUser(exampleId);                    // By ID
+  var userByName = userHandler.getTwitchUser(exampleUsername);        // By Username
 
   // Check both are the same
   IO.println("Users are the same: " + user.equals(userByName));
@@ -253,7 +247,7 @@ void main() {
   IO.println("-----------------------------------\n");
 
   // Get User Email (requires USER_READ_EMAIL scope)
-  String email = userHandler.getUserMail(user);                               // By TwitchUser
+  var email = userHandler.getUserMail(user);                          // By TwitchUser
   IO.println("Email: " + email);
 
   // Get User Email by ID and Username
@@ -268,28 +262,24 @@ void main() {
 ### [Chat Management](https://www.GitHub.com/MCmoderSD/Helix-API/blob/master/src/test/java/examples/ChatExample.java)
 In this example, we demonstrate how to retrieve the list of chatters in a Twitch channel using the `ChatHandler`.
 ```java
-import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.objects.TwitchUser;
 import de.MCmoderSD.helix.handler.*;
 
 import examples.AuthExample;
 
-import java.util.HashSet;
-
 void main() {
 
   // Init HelixHandler
-  HelixHandler helixHandler = AuthExample.initHelix();
-  UserHandler userHandler = helixHandler.getUserHandler();
-  ChatHandler chatHandler = helixHandler.getChatHandler();
+  var helixHandler = AuthExample.initHelix();
+  var userHandler = helixHandler.getUserHandler();
+  var chatHandler = helixHandler.getChatHandler();
 
   // Example Variables
-  TwitchUser channel = userHandler.getTwitchUser("MCmoderSD");
+  var channel = userHandler.getTwitchUser("MCmoderSD");
 
   // Get Chatters
-  HashSet<TwitchUser> chatters = chatHandler.getChatters(channel);
+  var chatters = chatHandler.getChatters(channel);
   IO.println("Chatters in " + channel.getDisplayName() + "'s channel: " + chatters.size());
-  for (TwitchUser chatter : chatters) IO.println(" - " + chatter.getDisplayName() + " (ID: " + chatter.getId() + ")");
+  for (var chatter : chatters) IO.println(" - " + chatter.getDisplayName() + " (ID: " + chatter.getId() + ")");
 
   // Exit
   System.exit(0);
@@ -301,31 +291,29 @@ In this example, we demonstrate how to check and list various channel roles usin
 
 Additionally, we show how to promote, demote, add, and remove users from roles such as moderators and VIPs.
 ```java
-import de.MCmoderSD.helix.core.HelixHandler;
 import de.MCmoderSD.helix.handler.*;
 import de.MCmoderSD.helix.objects.*;
 
 import examples.AuthExample;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
 void main() {
 
   // Init Handlers
-  HelixHandler helixHandler = AuthExample.initHelix();
-  UserHandler userHandler = helixHandler.getUserHandler();
-  RoleHandler roleHandler = helixHandler.getRoleHandler();
+  var helixHandler = AuthExample.initHelix();
+  var userHandler = helixHandler.getUserHandler();
+  var roleHandler = helixHandler.getRoleHandler();
 
   // Example Users
-  TwitchUser channel = userHandler.getTwitchUser("MCmoderSD");            // Your Channel Here (needs to be authenticated)
-  TwitchUser exampleMod = userHandler.getTwitchUser("LangerLanzenLeo");   // Example Moderator
-  TwitchUser exampleEditor = userHandler.getTwitchUser("r4kunnn");        // Example Editor
-  TwitchUser exampleVIP = userHandler.getTwitchUser("RebixDev");          // Example VIP
-  TwitchUser exampleSubscriber = userHandler.getTwitchUser("seybiiiii");  // Example Subscriber
-  TwitchUser exampleFollower = userHandler.getTwitchUser("RedSmileTV");   // Example Follower
-  TwitchUser exampleUser = userHandler.getTwitchUser("ModersEsel");       // Example User
+  var channel = userHandler.getTwitchUser("MCmoderSD");           // Your Channel Here (needs to be authenticated)
+  var exampleMod = userHandler.getTwitchUser("LangerLanzenLeo");  // Example Moderator
+  var exampleEditor = userHandler.getTwitchUser("r4kunnn");       // Example Editor
+  var exampleVIP = userHandler.getTwitchUser("RebixDev");         // Example VIP
+  var exampleSubscriber = userHandler.getTwitchUser("seybiiiii"); // Example Subscriber
+  var exampleFollower = userHandler.getTwitchUser("RedSmileTV");  // Example Follower
+  var exampleUser = userHandler.getTwitchUser("ModersEsel");      // Example User
 
 
   // Promote VIP to Moderator
@@ -365,11 +353,11 @@ void main() {
 
 
   // Get Roles Lists
-  HashSet<ChannelModerator> moderators = roleHandler.getModerators(channel);      // Get all moderators
-  HashSet<ChannelEditor> editors = roleHandler.getEditors(channel);               // Get all editors
-  HashSet<ChannelVip> vips = roleHandler.getVIPs(channel);                        // Get all VIPs
-  HashSet<ChannelSubscriber> subscribers = roleHandler.getSubscribers(channel);   // Get all subscribers
-  HashSet<ChannelFollower> followers = roleHandler.getFollowers(channel);         // Get all followers
+  var moderators = roleHandler.getModerators(channel);    // Get all moderators
+  var editors = roleHandler.getEditors(channel);          // Get all editors
+  var vips = roleHandler.getVIPs(channel);                // Get all VIPs
+  var subscribers = roleHandler.getSubscribers(channel);  // Get all subscribers
+  var followers = roleHandler.getFollowers(channel);      // Get all followers
 
   // Print Sizes
   IO.println("Found Roles for " + channel.getDisplayName() + ":");
@@ -382,12 +370,12 @@ void main() {
 
 
   // Check Roles for Multiple Users
-  HashSet<TwitchUser> twitchUsers = new HashSet<>(List.of(new TwitchUser[]{ channel, exampleMod, exampleEditor, exampleVIP, exampleSubscriber, exampleFollower, exampleUser }));
-  HashMap<TwitchUser, Boolean> modMap = roleHandler.checkModerators(twitchUsers, channel);            // Check Moderators
-  HashMap<TwitchUser, Boolean> editorMap = roleHandler.checkEditors(twitchUsers, channel);            // Check Editors
-  HashMap<TwitchUser, Boolean> vipMap = roleHandler.checkVIPs(twitchUsers, channel);                  // Check VIPs
-  HashMap<TwitchUser, Boolean> subscriberMap = roleHandler.checkSubscribers(twitchUsers, channel);    // Check Subscribers
-  HashMap<TwitchUser, Boolean> followerMap = roleHandler.checkFollowers(twitchUsers, channel);        // Check Followers
+  var twitchUsers = new HashSet<>(List.of(new TwitchUser[]{ channel, exampleMod, exampleEditor, exampleVIP, exampleSubscriber, exampleFollower, exampleUser }));
+  var modMap = roleHandler.checkModerators(twitchUsers, channel);         // Check Moderators
+  var editorMap = roleHandler.checkEditors(twitchUsers, channel);         // Check Editors
+  var vipMap = roleHandler.checkVIPs(twitchUsers, channel);               // Check VIPs
+  var subscriberMap = roleHandler.checkSubscribers(twitchUsers, channel); // Check Subscribers
+  var followerMap = roleHandler.checkFollowers(twitchUsers, channel);     // Check Followers
 
   // Print positive checks
   IO.println("\nModerator Check:");
@@ -414,8 +402,6 @@ void main() {
 In this example, we demonstrate how to run a commercial ad on a Twitch channel using the `StreamHandler`. <br>
 For this to work, the channel must be live and advertising must be enabled on the channel.
 ```java
-import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.objects.TwitchUser;
 import de.MCmoderSD.helix.handler.*;
 
 import examples.AuthExample;
@@ -425,12 +411,12 @@ import static de.MCmoderSD.helix.handler.StreamHandler.CommercialLength.LENGTH_3
 void main() {
 
   // Init HelixHandler
-  HelixHandler helixHandler = AuthExample.initHelix();
-  UserHandler userHandler = helixHandler.getUserHandler();
-  StreamHandler streamHandler = helixHandler.getStreamHandler();
+  var helixHandler = AuthExample.initHelix();
+  var userHandler = helixHandler.getUserHandler();
+  var streamHandler = helixHandler.getStreamHandler();
 
   // Get Channel
-  TwitchUser channel = userHandler.getTwitchUser("MCmoderSD");    // Channel to run ad on
+  var channel = userHandler.getTwitchUser("MCmoderSD"); // Channel to run ad on
 
   // Run Ad
   streamHandler.runCommercial(channel, LENGTH_30);
@@ -444,31 +430,29 @@ void main() {
 In this example, we demonstrate how to start and cancel a raid between two Twitch channels using the `StreamHandler`. <br>
 For this to work, the source channel must be live must have already started a raid.
 ```java
-import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.objects.TwitchUser;
 import de.MCmoderSD.helix.handler.*;
 
 import examples.AuthExample;
 
 void main() {
 
-  // Init HelixHandler
-  HelixHandler helixHandler = AuthExample.initHelix();
-  UserHandler userHandler = helixHandler.getUserHandler();
-  StreamHandler streamHandler = helixHandler.getStreamHandler();
+    // Init HelixHandler
+    var helixHandler = AuthExample.initHelix();
+    var userHandler = helixHandler.getUserHandler();
+    var streamHandler = helixHandler.getStreamHandler();
 
-  // Get Channels
-  TwitchUser user = userHandler.getTwitchUser("MCmoderSD");       // Channel to raid to      (target)
-  TwitchUser channel = userHandler.getTwitchUser("ModersEsel");   // Channel to raid from    (source)
+    // Get Channels
+    var user = userHandler.getTwitchUser("MCmoderSD");      // Channel to raid to      (target)
+    var channel = userHandler.getTwitchUser("ModersEsel");  // Channel to raid from    (source)
 
-  // Cancel Raid
-  streamHandler.cancelRaid(channel);
+    // Cancel Raid
+    streamHandler.cancelRaid(channel);
 
-  // Start Raid
-  streamHandler.startRaid(user, channel);
+    // Start Raid
+    streamHandler.startRaid(user, channel);
 
-  // Exit
-  System.exit(0);
+    // Exit
+    System.exit(0);
 }
 ```
 
@@ -476,8 +460,6 @@ void main() {
 In this example, we demonstrate how to send a shoutout from one Twitch channel to another using the `StreamHandler`. <br>
 For this to work, the source channel must be live and must have at least one viewer.
 ```java
-import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.objects.TwitchUser;
 import de.MCmoderSD.helix.handler.*;
 
 import examples.AuthExample;
@@ -485,13 +467,13 @@ import examples.AuthExample;
 void main() {
 
   // Init HelixHandler
-  HelixHandler helixHandler = AuthExample.initHelix();
-  UserHandler userHandler = helixHandler.getUserHandler();
-  StreamHandler streamHandler = helixHandler.getStreamHandler();
+  var helixHandler = AuthExample.initHelix();
+  var userHandler = helixHandler.getUserHandler();
+  var streamHandler = helixHandler.getStreamHandler();
 
   // Get Channels
-  TwitchUser user = userHandler.getTwitchUser("MCmoderSD");       // Channel to send shoutout to      (target)
-  TwitchUser channel = userHandler.getTwitchUser("ModersEsel");   // Channel to send shoutout from    (source)
+  var user = userHandler.getTwitchUser("MCmoderSD");      // Channel to send shoutout to      (target)
+  var channel = userHandler.getTwitchUser("ModersEsel");  // Channel to send shoutout from    (source)
 
   // Send Shoutout
   streamHandler.sendShoutout(user, channel);
@@ -505,8 +487,6 @@ void main() {
 In this example, we demonstrate how to retrieve channel information using the `ChannelHandler`. <br>
 We will fetch the channel info by ID, username, and `TwitchUser`, compare the results, and print out various details about the channel.
 ```java
-import de.MCmoderSD.helix.core.HelixHandler;
-import de.MCmoderSD.helix.objects.ChannelInfo;
 import de.MCmoderSD.helix.handler.*;
 
 import examples.AuthExample;
@@ -516,18 +496,18 @@ import java.util.Arrays;
 void main() {
 
   // Init HelixHandler
-  HelixHandler helixHandler = AuthExample.initHelix();
-  UserHandler userHandler = helixHandler.getUserHandler();
-  ChannelHandler channelHandler = helixHandler.getChannelHandler();
+  var helixHandler = AuthExample.initHelix();
+  var userHandler = helixHandler.getUserHandler();
+  var channelHandler = helixHandler.getChannelHandler();
 
   // Example Variables
-  var exampleId = 164284617;              // User ID
-  var exampleUsername = "MCmoderSD";      // Username
+  var exampleId = 164284617;          // User ID
+  var exampleUsername = "MCmoderSD";  // Username
 
   // Get Channel Info
-  ChannelInfo infoById = channelHandler.getChannelInfo(exampleId);                        // By ID
-  ChannelInfo infoByName = channelHandler.getChannelInfo(exampleUsername);                // By Username
-  ChannelInfo info = channelHandler.getChannelInfo(userHandler.getTwitchUser(exampleId)); // By TwitchUser
+  var infoById = channelHandler.getChannelInfo(exampleId);                        // By ID
+  var infoByName = channelHandler.getChannelInfo(exampleUsername);                // By Username
+  var info = channelHandler.getChannelInfo(userHandler.getTwitchUser(exampleId)); // By TwitchUser
 
   // Check both are the same
   IO.println("ChannelInfos are the same: " + infoById.equals(infoByName));
