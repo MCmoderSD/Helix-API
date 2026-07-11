@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
+import static java.lang.IO.println;
+
 @SuppressWarnings("ALL")
 public class AuthExample {
 
@@ -46,6 +48,6 @@ public class AuthExample {
 
         // Get Authorization URL
         var authURL = helixHandler.getAuthorizationUrl(scopes);
-        IO.println("Authorization URL: " + authURL);
+        println("Authorization URL: " + authURL);
     }
 }

@@ -1,5 +1,7 @@
 import examples.AuthExample;
 
+import static java.lang.IO.println;
+
 void main() {
 
     // Init HelixHandler
@@ -15,28 +17,28 @@ void main() {
     var userByName = userHandler.getTwitchUser(exampleUsername);        // By Username
 
     // Check both are the same
-    IO.println("Users are the same: " + user.equals(userByName));
+    println("Users are the same: " + user.equals(userByName));
 
     // Print User Info
-    IO.println("\n------- Twitch User Info -------");
-    IO.println("User ID: " + user.getId());
-    IO.println("Username: " + user.getUsername());
-    IO.println("Created At: " + user.getCreatedAt());
-    IO.println("Display Name: " + user.getDisplayName());
-    IO.println("Description: " + user.getDescription());
-    IO.println("Profile Image URL: " + user.getProfileImageUrl());
-    IO.println("Offline Image URL: " + user.getOfflineImageUrl());
-    IO.println("Broadcaster Type: " + user.getBroadcasterType());
-    IO.println("User Type: " + user.getType());
-    IO.println("-----------------------------------\n");
+    println("\n------- Twitch User Info -------");
+    println("User ID: " + user.getId());
+    println("Username: " + user.getUsername());
+    println("Created At: " + user.getCreatedAt());
+    println("Display Name: " + user.getDisplayName());
+    println("Description: " + user.getDescription());
+    println("Profile Image URL: " + user.getProfileImageUrl());
+    println("Offline Image URL: " + user.getOfflineImageUrl());
+    println("Broadcaster Type: " + user.getBroadcasterType());
+    println("User Type: " + user.getType());
+    println("-----------------------------------\n");
 
     // Get User Email (requires USER_READ_EMAIL scope)
     var email = userHandler.getUserMail(user);                          // By TwitchUser
-    IO.println("Email: " + email);
+    println("Email: " + email);
 
     // Get User Email by ID and Username
-    IO.println("ID: " + userHandler.getUserMail(exampleId));            // By ID
-    IO.println("Name: " + userHandler.getUserMail(exampleUsername));    // By Username
+    println("ID: " + userHandler.getUserMail(exampleId));            // By ID
+    println("Name: " + userHandler.getUserMail(exampleUsername));    // By Username
 
     // Exit
     System.exit(0);

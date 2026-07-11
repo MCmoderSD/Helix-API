@@ -143,7 +143,7 @@ Add the dependency to your `pom.xml` file:
 <dependency>
     <groupId>de.MCmoderSD</groupId>
     <artifactId>Helix-API</artifactId>
-    <version>2.3.4</version>
+    <version>2.3.5</version>
 </dependency>
 ```
 
@@ -216,6 +216,8 @@ Additionally, we will show how to retrieve the user's email address, which requi
 ```java
 import examples.AuthExample;
 
+import static java.lang.IO.println;
+
 void main() {
 
   // Init HelixHandler
@@ -231,28 +233,28 @@ void main() {
   var userByName = userHandler.getTwitchUser(exampleUsername);        // By Username
 
   // Check both are the same
-  IO.println("Users are the same: " + user.equals(userByName));
+  println("Users are the same: " + user.equals(userByName));
 
   // Print User Info
-  IO.println("\n------- Twitch User Info -------");
-  IO.println("User ID: " + user.getId());
-  IO.println("Username: " + user.getUsername());
-  IO.println("Created At: " + user.getCreatedAt());
-  IO.println("Display Name: " + user.getDisplayName());
-  IO.println("Description: " + user.getDescription());
-  IO.println("Profile Image URL: " + user.getProfileImageUrl());
-  IO.println("Offline Image URL: " + user.getOfflineImageUrl());
-  IO.println("Broadcaster Type: " + user.getBroadcasterType());
-  IO.println("User Type: " + user.getType());
-  IO.println("-----------------------------------\n");
+  println("\n------- Twitch User Info -------");
+  println("User ID: " + user.getId());
+  println("Username: " + user.getUsername());
+  println("Created At: " + user.getCreatedAt());
+  println("Display Name: " + user.getDisplayName());
+  println("Description: " + user.getDescription());
+  println("Profile Image URL: " + user.getProfileImageUrl());
+  println("Offline Image URL: " + user.getOfflineImageUrl());
+  println("Broadcaster Type: " + user.getBroadcasterType());
+  println("User Type: " + user.getType());
+  println("-----------------------------------\n");
 
   // Get User Email (requires USER_READ_EMAIL scope)
   var email = userHandler.getUserMail(user);                          // By TwitchUser
-  IO.println("Email: " + email);
+  println("Email: " + email);
 
   // Get User Email by ID and Username
-  IO.println("ID: " + userHandler.getUserMail(exampleId));            // By ID
-  IO.println("Name: " + userHandler.getUserMail(exampleUsername));    // By Username
+  println("ID: " + userHandler.getUserMail(exampleId));            // By ID
+  println("Name: " + userHandler.getUserMail(exampleUsername));    // By Username
 
   // Exit
   System.exit(0);
@@ -266,6 +268,8 @@ import de.MCmoderSD.helix.handler.*;
 
 import examples.AuthExample;
 
+import static java.lang.IO.println;
+
 void main() {
 
   // Init HelixHandler
@@ -278,8 +282,8 @@ void main() {
 
   // Get Chatters
   var chatters = chatHandler.getChatters(channel);
-  IO.println("Chatters in " + channel.getDisplayName() + "'s channel: " + chatters.size());
-  for (var chatter : chatters) IO.println(" - " + chatter.getDisplayName() + " (ID: " + chatter.getId() + ")");
+  println("Chatters in " + channel.getDisplayName() + "'s channel: " + chatters.size());
+  for (var chatter : chatters) println(" - " + chatter.getDisplayName() + " (ID: " + chatter.getId() + ")");
 
   // Exit
   System.exit(0);
@@ -299,6 +303,8 @@ import examples.AuthExample;
 import java.util.HashSet;
 import java.util.List;
 
+import static java.lang.IO.println;
+
 void main() {
 
   // Init Handlers
@@ -317,39 +323,39 @@ void main() {
 
 
   // Promote VIP to Moderator
-  IO.println("\nPromoting " + exampleVIP.getDisplayName() + " from VIP to Moderator...");
-  IO.println(" - Before Promotion: Moderator: " + roleHandler.isModerator(exampleVIP, channel) + " | Is VIP: " + roleHandler.isVIP(exampleVIP, channel));
-  IO.println(" - Success: " + roleHandler.addModerator(exampleVIP, channel));
-  IO.println(" - After Promotion: Moderator: " + roleHandler.isModerator(exampleVIP, channel) + " | Is VIP: " + roleHandler.isVIP(exampleVIP, channel));
+  println("\nPromoting " + exampleVIP.getDisplayName() + " from VIP to Moderator...");
+  println(" - Before Promotion: Moderator: " + roleHandler.isModerator(exampleVIP, channel) + " | Is VIP: " + roleHandler.isVIP(exampleVIP, channel));
+  println(" - Success: " + roleHandler.addModerator(exampleVIP, channel));
+  println(" - After Promotion: Moderator: " + roleHandler.isModerator(exampleVIP, channel) + " | Is VIP: " + roleHandler.isVIP(exampleVIP, channel));
 
   // Remove Moderator
-  IO.println("\nRemoving " + exampleMod.getDisplayName() + " from Moderator role...");
-  IO.println(" - Before Removal: Is Moderator: " + roleHandler.isModerator(exampleMod, channel) + " | Is VIP: " + roleHandler.isVIP(exampleMod, channel));
-  IO.println(" - Success: " + roleHandler.removeModerator(exampleMod, channel));
-  IO.println(" - After Removal: Is Moderator: " + roleHandler.isModerator(exampleMod, channel) + " | Is VIP: " + roleHandler.isVIP(exampleMod, channel));
+  println("\nRemoving " + exampleMod.getDisplayName() + " from Moderator role...");
+  println(" - Before Removal: Is Moderator: " + roleHandler.isModerator(exampleMod, channel) + " | Is VIP: " + roleHandler.isVIP(exampleMod, channel));
+  println(" - Success: " + roleHandler.removeModerator(exampleMod, channel));
+  println(" - After Removal: Is Moderator: " + roleHandler.isModerator(exampleMod, channel) + " | Is VIP: " + roleHandler.isVIP(exampleMod, channel));
 
   // Make user VIP
-  IO.println("\nAdding " + exampleUser.getDisplayName() + " to VIPs...");
-  IO.println(" - Before: Is VIP: " + roleHandler.isVIP(exampleUser, channel) + " | Is Moderator: " + roleHandler.isModerator(exampleUser, channel));
-  IO.println(" - Success: " + roleHandler.addVIP(exampleUser, channel));
-  IO.println(" - After: Is VIP: " + roleHandler.isVIP(exampleUser, channel) + " | Is Moderator: " + roleHandler.isModerator(exampleUser, channel));
+  println("\nAdding " + exampleUser.getDisplayName() + " to VIPs...");
+  println(" - Before: Is VIP: " + roleHandler.isVIP(exampleUser, channel) + " | Is Moderator: " + roleHandler.isModerator(exampleUser, channel));
+  println(" - Success: " + roleHandler.addVIP(exampleUser, channel));
+  println(" - After: Is VIP: " + roleHandler.isVIP(exampleUser, channel) + " | Is Moderator: " + roleHandler.isModerator(exampleUser, channel));
 
   // Reset to original state
-  IO.println("\nResetting roles to original state...");
-  IO.println(" - Re-adding " + exampleMod.getDisplayName() + " to Moderators: " + roleHandler.addModerator(exampleMod, channel));     // Re-add Moderator
-  IO.println(" - Demoting " + exampleVIP.getDisplayName() + " from Moderator to VIP: " + roleHandler.addVIP(exampleVIP, channel));    // Demote to VIP from Moderator
-  IO.println(" - Removing " + exampleUser.getDisplayName() + " from VIPs: " + roleHandler.removeVIP(exampleUser, channel));           // Remove VIP
-  IO.println("\n\n--------------------------------------\n\n");
+  println("\nResetting roles to original state...");
+  println(" - Re-adding " + exampleMod.getDisplayName() + " to Moderators: " + roleHandler.addModerator(exampleMod, channel));     // Re-add Moderator
+  println(" - Demoting " + exampleVIP.getDisplayName() + " from Moderator to VIP: " + roleHandler.addVIP(exampleVIP, channel));    // Demote to VIP from Moderator
+  println(" - Removing " + exampleUser.getDisplayName() + " from VIPs: " + roleHandler.removeVIP(exampleUser, channel));           // Remove VIP
+  println("\n\n--------------------------------------\n\n");
 
 
   // Check Roles for Example Users
-  IO.println("Checking roles for example users:");
-  IO.println(" - " + exampleMod.getDisplayName() + " is moderator: " + roleHandler.isModerator(exampleMod, channel));
-  IO.println(" - " + exampleEditor.getDisplayName() + " is editor: " + roleHandler.isEditor(exampleEditor, channel));
-  IO.println(" - " + exampleVIP.getDisplayName() + " is VIP: " + roleHandler.isVIP(exampleVIP, channel));
-  IO.println(" - " + exampleSubscriber.getDisplayName() + " is subscriber: " + roleHandler.isSubscriber(exampleSubscriber, channel));
-  IO.println(" - " + exampleFollower.getDisplayName() + " is follower: " + roleHandler.isFollower(exampleFollower, channel));
-  IO.println("\n\n--------------------------------------\n\n");
+  println("Checking roles for example users:");
+  println(" - " + exampleMod.getDisplayName() + " is moderator: " + roleHandler.isModerator(exampleMod, channel));
+  println(" - " + exampleEditor.getDisplayName() + " is editor: " + roleHandler.isEditor(exampleEditor, channel));
+  println(" - " + exampleVIP.getDisplayName() + " is VIP: " + roleHandler.isVIP(exampleVIP, channel));
+  println(" - " + exampleSubscriber.getDisplayName() + " is subscriber: " + roleHandler.isSubscriber(exampleSubscriber, channel));
+  println(" - " + exampleFollower.getDisplayName() + " is follower: " + roleHandler.isFollower(exampleFollower, channel));
+  println("\n\n--------------------------------------\n\n");
 
 
   // Get Roles Lists
@@ -360,13 +366,13 @@ void main() {
   var followers = roleHandler.getFollowers(channel);      // Get all followers
 
   // Print Sizes
-  IO.println("Found Roles for " + channel.getDisplayName() + ":");
-  IO.println(" - Moderators: " + moderators.size());
-  IO.println(" - Editors: " + editors.size());
-  IO.println(" - VIPs: " + vips.size());
-  IO.println(" - Subscribers: " + subscribers.size());
-  IO.println(" - Followers: " + followers.size());
-  IO.println("\n\n--------------------------------------\n\n");
+  println("Found Roles for " + channel.getDisplayName() + ":");
+  println(" - Moderators: " + moderators.size());
+  println(" - Editors: " + editors.size());
+  println(" - VIPs: " + vips.size());
+  println(" - Subscribers: " + subscribers.size());
+  println(" - Followers: " + followers.size());
+  println("\n\n--------------------------------------\n\n");
 
 
   // Check Roles for Multiple Users
@@ -378,20 +384,20 @@ void main() {
   var followerMap = roleHandler.checkFollowers(twitchUsers, channel);     // Check Followers
 
   // Print positive checks
-  IO.println("\nModerator Check:");
-  for (var entry : modMap.entrySet()) if (entry.getValue()) IO.println(" - " + entry.getKey().getDisplayName() + " is a moderator");
+  println("\nModerator Check:");
+  for (var entry : modMap.entrySet()) if (entry.getValue()) println(" - " + entry.getKey().getDisplayName() + " is a moderator");
 
-  IO.println("\nEditor Check:");
-  for (var entry : editorMap.entrySet()) if (entry.getValue()) IO.println(" - " + entry.getKey().getDisplayName() + " is an editor");
+  println("\nEditor Check:");
+  for (var entry : editorMap.entrySet()) if (entry.getValue()) println(" - " + entry.getKey().getDisplayName() + " is an editor");
 
-  IO.println("\nVIP Check:");
-  for (var entry : vipMap.entrySet()) if (entry.getValue()) IO.println(" - " + entry.getKey().getDisplayName() + " is a VIP");
+  println("\nVIP Check:");
+  for (var entry : vipMap.entrySet()) if (entry.getValue()) println(" - " + entry.getKey().getDisplayName() + " is a VIP");
 
-  IO.println("\nSubscriber Check:");
-  for (var entry : subscriberMap.entrySet()) if (entry.getValue()) IO.println(" - " + entry.getKey().getDisplayName() + " is a subscriber");
+  println("\nSubscriber Check:");
+  for (var entry : subscriberMap.entrySet()) if (entry.getValue()) println(" - " + entry.getKey().getDisplayName() + " is a subscriber");
 
-  IO.println("\nFollower Check:");
-  for (var entry : followerMap.entrySet()) if (entry.getValue()) IO.println(" - " + entry.getKey().getDisplayName() + " is a follower");
+  println("\nFollower Check:");
+  for (var entry : followerMap.entrySet()) if (entry.getValue()) println(" - " + entry.getKey().getDisplayName() + " is a follower");
 
   // Exit
   System.exit(0);
@@ -493,6 +499,8 @@ import examples.AuthExample;
 
 import java.util.Arrays;
 
+import static java.lang.IO.println;
+
 void main() {
 
   // Init HelixHandler
@@ -510,19 +518,19 @@ void main() {
   var info = channelHandler.getChannelInfo(userHandler.getTwitchUser(exampleId)); // By TwitchUser
 
   // Check both are the same
-  IO.println("ChannelInfos are the same: " + infoById.equals(infoByName));
+  println("ChannelInfos are the same: " + infoById.equals(infoByName));
 
   // Print Channel Info
-  IO.println("\n------- Channel Info -------");
-  IO.println("Channel ID: " + info.getId());
-  IO.println("Display Name: " + info.getDisplayName());
-  IO.println("Title: " + info.getTitle());
-  IO.println("Game ID: " + info.getGameId());
-  IO.println("Game Name: " + info.getGameName());
-  IO.println("Language: " + info.getLanguage());
-  IO.println("Tags: " + Arrays.toString(info.getTags().toArray()));
-  IO.println("Branded Content: " + info.isBrandedContent());
-  IO.println("-----------------------------------\n");
+  println("\n------- Channel Info -------");
+  println("Channel ID: " + info.getId());
+  println("Display Name: " + info.getDisplayName());
+  println("Title: " + info.getTitle());
+  println("Game ID: " + info.getGameId());
+  println("Game Name: " + info.getGameName());
+  println("Language: " + info.getLanguage());
+  println("Tags: " + Arrays.toString(info.getTags().toArray()));
+  println("Branded Content: " + info.isBrandedContent());
+  println("-----------------------------------\n");
 
   // Exit
   System.exit(0);

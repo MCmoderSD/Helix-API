@@ -2,6 +2,8 @@ import de.MCmoderSD.helix.handler.*;
 
 import examples.AuthExample;
 
+import static java.lang.IO.println;
+
 void main() {
 
     // Init HelixHandler
@@ -14,8 +16,8 @@ void main() {
 
     // Get Chatters
     var chatters = chatHandler.getChatters(channel);
-    IO.println("Chatters in " + channel.getDisplayName() + "'s channel: " + chatters.size());
-    for (var chatter : chatters) IO.println(" - " + chatter.getDisplayName() + " (ID: " + chatter.getId() + ")");
+    println("Chatters in " + channel.getDisplayName() + "'s channel: " + chatters.size());
+    for (var chatter : chatters) println(" - " + chatter.getDisplayName() + " (ID: " + chatter.getId() + ")");
 
     // Exit
     System.exit(0);

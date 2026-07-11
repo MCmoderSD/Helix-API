@@ -7,6 +7,7 @@ import static de.MCmoderSD.helix.enums.Scope.MODERATION_READ;
 import static de.MCmoderSD.helix.enums.Scope.CHANNEL_READ_VIPS;
 import static de.MCmoderSD.helix.enums.Scope.CHANNEL_READ_SUBSCRIPTIONS;
 import static de.MCmoderSD.helix.enums.Scope.MODERATOR_READ_FOLLOWERS;
+import static java.lang.IO.println;
 
 void main() {
 
@@ -38,9 +39,9 @@ void main() {
     helixInitEndTime = System.nanoTime();
 
     // Print Initialization Times
-    IO.println("Configuration Load Time: " + (configEndTime - configStartTime) / 1_000_000 + " ms");
-    IO.println("Server Initialization Time: " + (serverEndTime - serverStartTime) / 1_000_000 + " ms");
-    IO.println("HelixHandler Initialization Time: " + (helixInitEndTime - helixInitStartTime) / 1_000_000 + " ms");
+    println("Configuration Load Time: " + (configEndTime - configStartTime) / 1_000_000 + " ms");
+    println("Server Initialization Time: " + (serverEndTime - serverStartTime) / 1_000_000 + " ms");
+    println("HelixHandler Initialization Time: " + (helixInitEndTime - helixInitStartTime) / 1_000_000 + " ms");
 
     // Setup Scopes
     var scopes = new Scope[]{
@@ -51,7 +52,7 @@ void main() {
     };
 
     // Print Authorization URL
-    IO.println("\nPlease authorize the application if you haven't done so already.\n" + helixHandler.getAuthorizationUrl(scopes) + "\n");
+    println("\nPlease authorize the application if you haven't done so already.\n" + helixHandler.getAuthorizationUrl(scopes) + "\n");
 
     // Get Handlers
     var userHandler = helixHandler.getUserHandler();
@@ -90,7 +91,7 @@ void main() {
     followerCacheEndTime = new long[rounds + 1];
 
     // Run Benchmarks
-    IO.println("\nStarting Benchmark for Role Retrievals over " + rounds + " rounds...\n");
+    println("\nStarting Benchmark for Role Retrievals over " + rounds + " rounds...\n");
     for (var i = 0; i < rounds + 1; i++) {
         var start = System.nanoTime();
 
@@ -141,8 +142,8 @@ void main() {
         roleHandler.getFollowers(channel);
         followerCacheEndTime[i] = System.nanoTime();
 
-        if (i == 0) IO.println("Warm-up round completed... took " + (System.nanoTime() - start) / 1_000_000 + " ms");
-        else IO.println("Completed benchmark round " + (i) + " of " + rounds + "... took " + (System.nanoTime() - start) / 1_000_000 + " ms");
+        if (i == 0) println("Warm-up round completed... took " + (System.nanoTime() - start) / 1_000_000 + " ms");
+        else println("Completed benchmark round " + (i) + " of " + rounds + "... took " + (System.nanoTime() - start) / 1_000_000 + " ms");
     }
 
 
@@ -185,35 +186,35 @@ void main() {
     followerCacheTime /= rounds;
 
     // Print Results
-    IO.println("\nBenchmark Results for Channel: " + channel.getDisplayName() + " (ID: " + channel.getId() + ")\n");
+    println("\nBenchmark Results for Channel: " + channel.getDisplayName() + " (ID: " + channel.getId() + ")\n");
 
     // Moderators
-    IO.println("Moderators: " + modSize);
-    IO.println(" - Non-Cached Retrieval Time: " + moderatorNonCacheTime + " ms");
-    IO.println(" - Cached Retrieval Time: " + moderatorCacheTime + " ms");
-    IO.println(" - Saving with Cache: " + (moderatorNonCacheTime - moderatorCacheTime) + " ms");
-    IO.println(" - Speedup Factor: " + String.format("%.2f", (double) moderatorNonCacheTime / moderatorCacheTime) + "x\n");
+    println("Moderators: " + modSize);
+    println(" - Non-Cached Retrieval Time: " + moderatorNonCacheTime + " ms");
+    println(" - Cached Retrieval Time: " + moderatorCacheTime + " ms");
+    println(" - Saving with Cache: " + (moderatorNonCacheTime - moderatorCacheTime) + " ms");
+    println(" - Speedup Factor: " + String.format("%.2f", (double) moderatorNonCacheTime / moderatorCacheTime) + "x\n");
 
     // VIPs
-    IO.println("VIPs: " + vipSize);
-    IO.println(" - Non-Cached Retrieval Time: " + vipNonCacheTime + " ms");
-    IO.println(" - Cached Retrieval Time: " + vipCacheTime + " ms");
-    IO.println(" - Saving with Cache: " + (vipNonCacheTime - vipCacheTime) + " ms");
-    IO.println(" - Speedup Factor: " + String.format("%.2f", (double) vipNonCacheTime / vipCacheTime) + "x\n");
+    println("VIPs: " + vipSize);
+    println(" - Non-Cached Retrieval Time: " + vipNonCacheTime + " ms");
+    println(" - Cached Retrieval Time: " + vipCacheTime + " ms");
+    println(" - Saving with Cache: " + (vipNonCacheTime - vipCacheTime) + " ms");
+    println(" - Speedup Factor: " + String.format("%.2f", (double) vipNonCacheTime / vipCacheTime) + "x\n");
 
     // Subscribers
-    IO.println("Subscribers: " + subSize);
-    IO.println(" - Non-Cached Retrieval Time: " + subscriberNonCacheTime + " ms");
-    IO.println(" - Cached Retrieval Time: " + subscriberCacheTime + " ms");
-    IO.println(" - Saving with Cache: " + (subscriberNonCacheTime - subscriberCacheTime) + " ms");
-    IO.println(" - Speedup Factor: " + String.format("%.2f", (double) subscriberNonCacheTime / subscriberCacheTime) + "x\n");
+    println("Subscribers: " + subSize);
+    println(" - Non-Cached Retrieval Time: " + subscriberNonCacheTime + " ms");
+    println(" - Cached Retrieval Time: " + subscriberCacheTime + " ms");
+    println(" - Saving with Cache: " + (subscriberNonCacheTime - subscriberCacheTime) + " ms");
+    println(" - Speedup Factor: " + String.format("%.2f", (double) subscriberNonCacheTime / subscriberCacheTime) + "x\n");
 
     // Followers
-    IO.println("Followers: " + followerSize);
-    IO.println(" - Non-Cached Retrieval Time: " + followerNonCacheTime + " ms");
-    IO.println(" - Cached Retrieval Time: " + followerCacheTime + " ms");
-    IO.println(" - Saving with Cache: " + (followerNonCacheTime - followerCacheTime) + " ms");
-    IO.println(" - Speedup Factor: " + String.format("%.2f", (double) followerNonCacheTime / followerCacheTime) + "x\n");
+    println("Followers: " + followerSize);
+    println(" - Non-Cached Retrieval Time: " + followerNonCacheTime + " ms");
+    println(" - Cached Retrieval Time: " + followerCacheTime + " ms");
+    println(" - Saving with Cache: " + (followerNonCacheTime - followerCacheTime) + " ms");
+    println(" - Speedup Factor: " + String.format("%.2f", (double) followerNonCacheTime / followerCacheTime) + "x\n");
 
     // Exit
     System.exit(0);
