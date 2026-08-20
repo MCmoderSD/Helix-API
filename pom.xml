@@ -68,7 +68,7 @@
         <dependency>
             <groupId>de.MCmoderSD</groupId>
             <artifactId>JsonUtility</artifactId>
-            <version>1.5.7</version>
+            <version>1.5.9</version>
         </dependency>
 
         <!-- JSQL Driver -->
