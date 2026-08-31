@@ -5,7 +5,7 @@ This is a Java Helix-API wrapper for communicating with the Twitch Helix API. <b
 It provides a simple and easy-to-use interface for making requests to the Helix API endpoints.
 
 ## Features
-- [Authentication](#initialisation-and-authentication): OAuth2 authentication and scope management
+- [Authentication](#initialization-and-authentication): OAuth2 authentication and scope management
 - [User Management](#user-information): Retrieve user information and email addresses
 - [Chat Management](#chat-management): Retrieve chatters in a channel and manage chat settings
 - [Role Management](#role-management): Manage channel roles such as moderators, editors, VIPs, subscribers, and followers
@@ -108,14 +108,14 @@ The configuration consists of three main sections:
   - `clientId`: Your Twitch application's Client ID.
   - `clientSecret`: Your Twitch application's Client Secret.
 
-You can create a Twitch application and obtain the Client ID and Client Secret from the [Twitch Developer Console](https://dev.twitch.tv/console/apps).
+You can create a Twitch application and get the Client ID and Client Secret from the [Twitch Developer Console](https://dev.twitch.tv/console/apps).
 > Note: The database stores all data encrypted using the Client Secret as the encryption key. <br>
 > Make sure to keep your Client Secret secure and do not share it publicly.
 >
 > Also, changing the Client Secret will invalidate all existing tokens stored in the database.
 
 ### 2. Server
-Since the Helix-API uses the [HTTPS-Server](https://www.GitHub.com/MCmoderSD/HTTPS-Server) for handling HTTP and SSL connections, simply look [here](https://www.GitHub.com/MCmoderSD/HTTPS-Server#configuration) for detailed information about the server configuration options.
+Since the Helix-API uses the [HTTPS-Server](https://www.GitHub.com/MCmoderSD/HTTPS-Server) for handling HTTP and SSL connections, look [here](https://www.GitHub.com/MCmoderSD/HTTPS-Server#configuration) for detailed information about the server configuration options.
 
 ### 3. Database
 The Helix-API uses a MariaDB database to store user credentials and tokens. <br>
@@ -143,13 +143,13 @@ Add the dependency to your `pom.xml` file:
 <dependency>
     <groupId>de.MCmoderSD</groupId>
     <artifactId>Helix-API</artifactId>
-    <version>2.3.8</version>
+    <version>2.3.9</version>
 </dependency>
 ```
 
 ## Usage examples
 
-### [Initialisation and Authentication](https://www.GitHub.com/MCmoderSD/Helix-API/blob/master/src/test/java/examples/AuthExample.java)
+### [Initialization and Authentication](https://www.GitHub.com/MCmoderSD/Helix-API/blob/master/src/test/java/examples/AuthExample.java)
 You need to load the [configuration JSON](#configuration) and need to start or provide a `Server` for the OAuth2 redirect URI. <br>
 After that you can initialize the `HelixHandler` and get the authorization URL for the required scopes. 
 
@@ -341,7 +341,7 @@ void main() {
   println(" - After: Is VIP: " + roleHandler.isVIP(exampleUser, channel) + " | Is Moderator: " + roleHandler.isModerator(exampleUser, channel));
 
   // Reset to original state
-  println("\nResetting roles to original state...");
+  println("\nResetting roles to the original state...");
   println(" - Re-adding " + exampleMod.getDisplayName() + " to Moderators: " + roleHandler.addModerator(exampleMod, channel));     // Re-add Moderator
   println(" - Demoting " + exampleVIP.getDisplayName() + " from Moderator to VIP: " + roleHandler.addVIP(exampleVIP, channel));    // Demote to VIP from Moderator
   println(" - Removing " + exampleUser.getDisplayName() + " from VIPs: " + roleHandler.removeVIP(exampleUser, channel));           // Remove VIP
@@ -349,7 +349,7 @@ void main() {
 
 
   // Check Roles for Example Users
-  println("Checking roles for example users:");
+  println("Checking roles, for example, users:");
   println(" - " + exampleMod.getDisplayName() + " is moderator: " + roleHandler.isModerator(exampleMod, channel));
   println(" - " + exampleEditor.getDisplayName() + " is editor: " + roleHandler.isEditor(exampleEditor, channel));
   println(" - " + exampleVIP.getDisplayName() + " is VIP: " + roleHandler.isVIP(exampleVIP, channel));
@@ -434,7 +434,7 @@ void main() {
 
 ### [Raid Management](https://www.GitHub.com/MCmoderSD/Helix-API/blob/master/src/test/java/examples/RaidExample.java)
 In this example, we demonstrate how to start and cancel a raid between two Twitch channels using the `StreamHandler`. <br>
-For this to work, the source channel must be live must have already started a raid.
+For this to work, the source channel must be live and must have already started a raid.
 ```java
 import de.MCmoderSD.helix.handler.*;
 
