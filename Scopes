@@ -67,8 +67,8 @@ moderator:manage:automod_settings
 moderator:read:banned_users
 moderator:manage:banned_users
 moderator:read:blocked_terms
-moderator:read:chat_messages
 moderator:manage:blocked_terms
+moderator:read:chat_messages
 moderator:manage:chat_messages
 moderator:read:chat_settings
 moderator:manage:chat_settings
@@ -82,6 +82,7 @@ moderator:manage:shield_mode
 moderator:read:shoutouts
 moderator:manage:shoutouts
 moderator:read:suspicious_users
+moderator:manage:suspicious_users
 moderator:read:unban_requests
 moderator:manage:unban_requests
 moderator:read:vips
@@ -197,7 +198,7 @@ whispers:read
 
 
 
-// 80 scopes listed below
+// 81 scopes listed below
 analytics:read:extensions
 analytics:read:games
 bits:read
@@ -239,8 +240,8 @@ moderator:manage:automod_settings
 moderator:read:banned_users
 moderator:manage:banned_users
 moderator:read:blocked_terms
-moderator:read:chat_messages
 moderator:manage:blocked_terms
+moderator:read:chat_messages
 moderator:manage:chat_messages
 moderator:read:chat_settings
 moderator:manage:chat_settings
@@ -254,6 +255,7 @@ moderator:manage:shield_mode
 moderator:read:shoutouts
 moderator:manage:shoutouts
 moderator:read:suspicious_users
+moderator:manage:suspicious_users
 moderator:read:unban_requests
 moderator:manage:unban_requests
 moderator:read:vips
