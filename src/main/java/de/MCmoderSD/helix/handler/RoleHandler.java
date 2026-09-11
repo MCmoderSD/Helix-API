@@ -122,7 +122,7 @@ public class RoleHandler extends Handler {
 
             // Get User
             var user = userMap.get(Integer.parseInt(moderator.getUserId()));
-            if (user == null) continue; // User not found, skip
+            if (user == null) continue; // User isn't found, skip
 
             // Add Moderator
             fetchedModerators.add(new ChannelModerator(
@@ -208,7 +208,7 @@ public class RoleHandler extends Handler {
 
             // Get User
             var user = userMap.get(Integer.parseInt(editor.getUserId()));
-            if (user == null) continue; // User not found, skip
+            if (user == null) continue; // User isn't found, skip
 
             // Add Editor
             channelEditors.add(new ChannelEditor(
@@ -270,7 +270,7 @@ public class RoleHandler extends Handler {
 
             // Get User
             var user = userMap.get(Integer.parseInt(vip.getUserId()));
-            if (user == null) continue; // User not found, skip
+            if (user == null) continue; // User isn't found, skip
 
             // Add VIP
             fetchedVips.add(new ChannelVip(
@@ -365,7 +365,7 @@ public class RoleHandler extends Handler {
 
             // Get User
             var user = userMap.get(Integer.parseInt(subscription.getUserId()));
-            if (user == null) continue; // User not found, skip
+            if (user == null) continue; // User hasn't been found, skip
 
             // Add Subscriber
             fetchedChannelSubscribers.add(new ChannelSubscriber(
@@ -459,7 +459,7 @@ public class RoleHandler extends Handler {
 
             // Get User
             var user = userMap.get(Integer.parseInt(follow.getUserId()));
-            if (user == null) continue; // User not found, skip
+            if (user == null) continue; // User hasn't been found, skip
 
             // Add Follower
             fetchedFollowers.add(new ChannelFollower(
@@ -912,7 +912,7 @@ public class RoleHandler extends Handler {
         if (user == null) throw new IllegalArgumentException("User cannot be null");
         if (channel == null) throw new IllegalArgumentException("Channel cannot be null");
 
-        // Check if user is channel
+        // Check if user is the channel
         if (user.equals(channel)) return false;
 
         // Get Access Token
@@ -932,7 +932,7 @@ public class RoleHandler extends Handler {
         var follows = inboundFollowers.getFollows();
         if (follows == null) throw new IllegalStateException("Failed to get followers for channel ID: " + id);
         if (follows.isEmpty()) return false;
-        if (follows.size() > 1) throw new IllegalStateException("Received multiple follow records for user ID: " + userId + " and channel ID: " + id);
+        if (follows.size() > 1) throw new IllegalStateException("Received the multiple following records for user ID: " + userId + " and channel ID: " + id);
 
         // Return if user is follower
         return userId.equals(follows.getFirst().getUserId());

@@ -111,14 +111,14 @@ public class TokenHandler {
         try {
             response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
-            throw new RuntimeException("Failed to send request", e);
+            throw new RuntimeException("Failed to send a request", e);
         }
 
         // Check Response
-        if (response == null) throw new RuntimeException("Failed to get token! Response is null");
-        if (response.statusCode() != 200) throw new RuntimeException("Failed to get token! Status Code: " + response.statusCode() + " Body: " + response.body());
-        if (response.body() == null) throw new RuntimeException("Failed to get token! Body is null");
-        if (response.body().isBlank()) throw new RuntimeException("Failed to get token! Body is empty");
+        if (response == null) throw new RuntimeException("Failed to get a token! Response is null");
+        if (response.statusCode() != 200) throw new RuntimeException("Failed to get a token! Status Code: " + response.statusCode() + " Body: " + response.body());
+        if (response.body() == null) throw new RuntimeException("Failed to get a token! Body is null");
+        if (response.body().isBlank()) throw new RuntimeException("Failed to get a token! The body is empty");
 
         // Create new token
         return new AuthToken(response.body(), helixHandler.getHelix(), this);

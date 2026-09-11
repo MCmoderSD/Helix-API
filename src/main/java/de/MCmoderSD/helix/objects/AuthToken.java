@@ -39,7 +39,7 @@ public class AuthToken implements Serializable {
 
         // Validate JSON
         if (!response.has("access_token") || response.get("access_token").isNull() || !response.get("access_token").isString()) throw new IllegalArgumentException("Response body does not contain access_token");
-        if (!response.has("refresh_token") || response.get("refresh_token").isNull() || !response.get("refresh_token").isString()) throw new IllegalArgumentException("Response body does not contain refresh_token");
+        if (!response.has("refresh_token") || response.get("refresh_token").isNull() || !response.get("refresh_token").isString()) throw new IllegalArgumentException("The response body does not contain refresh_token");
         if (!response.has("expires_in") || response.get("expires_in").isNull() || !response.get("expires_in").isNumber()) throw new IllegalArgumentException("Response body does not contain expires_in");
 
         // Extract data
